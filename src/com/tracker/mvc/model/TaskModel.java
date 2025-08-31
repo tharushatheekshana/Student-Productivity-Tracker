@@ -1,0 +1,112 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.tracker.mvc.model;
+
+import com.tracker.mvc.db.DBConnection;
+import com.tracker.mvc.dto.TaskDto;
+
+import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.time.LocalDate;
+
+/**
+ *
+ * @author Theekshana
+ */
+public class TaskModel {
+
+    private final Connection CONNECTION;
+
+    public TaskModel() throws Exception {
+        this.CONNECTION = DBConnection.getInstance().getConnection();
+        createTableIfNotExists(); // ✅ Ensure table exists
+    }
+
+    // Create table if it doesn't exist
+    private void createTableIfNotExists() throws Exception {
+        String sql = "CREATE TABLE IF NOT EXISTS tasks ("
+                   + "taskId INTEGER PRIMARY KEY AUTOINCREMENT, "
+                   + "subject TEXT NOT NULL, "
+                   + "description TEXT, "
+                   + "deadline TEXT, "
+                   + "completed INTEGER, "
+                   + "overdue INTEGER"
+                   + ");";
+        Statement stmt = CONNECTION.createStatement();
+        stmt.execute(sql);
+    }
+
+    // Save a new task
+    public String saveTask(TaskDto taskDto) throws Exception {
+        String sql = "INSERT INTO tasks(subject, description, deadline, completed, overdue) VALUES (?,?,?,?,?)";
+        PreparedStatement statement = CONNECTION.prepareStatement(sql);
+        statement.setString(1, taskDto.getSubject());
+        statement.setString(2, taskDto.getDescription());
+        statement.setString(3, taskDto.getDeadline().toString());
+        statement.setInt(4, taskDto.isCompleted() ? 1 : 0);
+        statement.setInt(5, taskDto.isOverdue() ? 1 : 0);
+
+        if (statement.executeUpdate() > 0) {
+            return "Success";
+        } else {
+            return "Failed";
+        }
+    }
+
+    // Search task by ID
+    public TaskDto searchTask(int taskId) throws Exception {
+        String sql = "SELECT * FROM tasks WHERE taskId = ?";
+        PreparedStatement statement = CONNECTION.prepareStatement(sql);
+        statement.setInt(1, taskId);
+        ResultSet rst = statement.executeQuery();
+
+        while (rst.next()) {
+            TaskDto dto = new TaskDto(
+                    rst.getInt("taskId"),
+                    rst.getString("subject"),
+                    rst.getString("description"),
+                    LocalDate.parse(rst.getString("deadline")),
+                    rst.getInt("completed") == 1,
+                    rst.getInt("overdue") == 1
+            );
+            return dto;
+        }
+
+        return null;
+    }
+
+    // Update existing task
+    public String updateTask(TaskDto taskDto) throws Exception {
+        String sql = "UPDATE tasks SET subject=?, description=?, deadline=?, completed=?, overdue=? WHERE taskId=?";
+        PreparedStatement statement = CONNECTION.prepareStatement(sql);
+        statement.setString(1, taskDto.getSubject());
+        statement.setString(2, taskDto.getDescription());
+        statement.setString(3, taskDto.getDeadline().toString());
+        statement.setInt(4, taskDto.isCompleted() ? 1 : 0);
+        statement.setInt(5, taskDto.isOverdue() ? 1 : 0);
+        statement.setInt(6, taskDto.getTaskId());
+
+        if (statement.executeUpdate() > 0) {
+            return "Success";
+        } else {
+            return "Failed";
+        }
+    }
+
+    // Delete a task
+    public String deleteTask(int taskId) throws Exception {
+        String sql = "DELETE FROM tasks WHERE taskId=?";
+        PreparedStatement statement = CONNECTION.prepareStatement(sql);
+        statement.setInt(1, taskId);
+
+        if (statement.executeUpdate() > 0) {
+            return "Success";
+        } else {
+            return "Failed";
+        }
+    }
+}

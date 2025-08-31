@@ -14,50 +14,27 @@ import java.sql.SQLException;
  */
 public class DBConnection {
 
-    // Path to your SQLite database file
-    private static final String DB_URL = "jdbc:sqlite:tracker.db";
+    private static DBConnection dbConnection;
+    private final Connection connection;
 
-    // Single instance
-    private static DBConnection instance;
+    private DBConnection() throws SQLException, ClassNotFoundException {
+        // Load SQLite JDBC driver
+        Class.forName("org.sqlite.JDBC");
 
-    // Connection object
-    private Connection connection;
-
-    // Private constructor to prevent external instantiation
-    private DBConnection() {
-        try {
-            // Load SQLite JDBC driver
-            Class.forName("org.sqlite.JDBC");
-            // Establish connection
-            connection = DriverManager.getConnection(DB_URL);
-            System.out.println("SQLite Database connected successfully.");
-        } catch (ClassNotFoundException | SQLException e) {
-            System.err.println("Database connection failed: " + e.getMessage());
-        }
+        // Connect to database (file-based)
+        String url = "jdbc:sqlite:tasks.db"; // SQLite database file
+        connection = DriverManager.getConnection(url);
     }
 
-    // Public method to get the singleton instance
-    public static DBConnection getInstance() {
-        if (instance == null) {
-            instance = new DBConnection();
+    // Singleton instance
+    public static DBConnection getInstance() throws SQLException, ClassNotFoundException {
+        if (dbConnection == null) {
+            dbConnection = new DBConnection();
         }
-        return instance;
+        return dbConnection;
     }
 
-    // Public method to get the connection
     public Connection getConnection() {
         return connection;
-    }
-
-    // Optional: Close connection
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-                System.out.println("Database connection closed.");
-            }
-        } catch (SQLException e) {
-            System.err.println("Failed to close connection: " + e.getMessage());
-        }
     }
 }

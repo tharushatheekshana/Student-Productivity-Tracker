@@ -4,15 +4,31 @@
  */
 package com.tracker.mvc.dto;
 
+import java.time.LocalDate;
+
 /**
  *
  * @author Theekshana
  */
 public class TaskDto {
     private int taskId;
-    private String name;
+    private String subject;
     private String description;
-    private String dueDate;
+    private LocalDate deadline;
+    private boolean completed;
+    private boolean overdue;
+
+    public TaskDto() {
+    }
+
+    public TaskDto(int taskId, String subject, String description, LocalDate deadline, boolean completed, boolean overdue) {
+        this.taskId = taskId;
+        this.subject = subject;
+        this.description = description;
+        this.deadline = deadline;
+        this.completed = completed;
+        this.overdue = overdue;
+    }
 
     /**
      * @return the taskId
@@ -29,17 +45,17 @@ public class TaskDto {
     }
 
     /**
-     * @return the name
+     * @return the subject
      */
-    public String getName() {
-        return name;
+    public String getSubject() {
+        return subject;
     }
 
     /**
-     * @param name the name to set
+     * @param subject the subject to set
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setSubject(String subject) {
+        this.subject = subject;
     }
 
     /**
@@ -57,22 +73,50 @@ public class TaskDto {
     }
 
     /**
-     * @return the dueDate
+     * @return the deadline
      */
-    public String getDueDate() {
-        return dueDate;
+    public LocalDate getDeadline() {
+        return deadline;
     }
 
     /**
-     * @param dueDate the dueDate to set
+     * @param deadline the deadline to set
      */
-    public void setDueDate(String dueDate) {
-        this.dueDate = dueDate;
+    public void setDeadline(LocalDate deadline) {
+        this.deadline = deadline;
+    }
+
+    /**
+     * @return the completed
+     */
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    /**
+     * @param completed the completed to set
+     */
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
+    }
+
+    /**
+     * @return the overdue
+     */
+    public boolean isOverdue() {
+        return overdue;
+    }
+
+    /**
+     * @param overdue the overdue to set
+     */
+    public void setOverdue(boolean overdue) {
+        this.overdue = overdue;
     }
 
     @Override
     public String toString() {
-        return "TaskDto{" + "taskId=" + taskId + ", name=" + name + ", description=" + description + ", dueDate=" + dueDate + '}';
+        return "TaskDto{" + "taskId=" + taskId + ", subject=" + subject + ", description=" + description + ", deadline=" + deadline + ", completed=" + completed + ", overdue=" + overdue + '}';
     }
     
 }

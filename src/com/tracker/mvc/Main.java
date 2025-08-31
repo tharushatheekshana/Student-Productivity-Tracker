@@ -4,12 +4,14 @@
  */
 package com.tracker.mvc;
 
+import com.tracker.mvc.view.DashboardView;
+
 /**
  *
  * @author Theekshana
  */
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello World");
+         new DashboardView().setVisible(true);
     }
 }

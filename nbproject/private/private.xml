@@ -5,8 +5,11 @@
         <group>
             <file>file:/D:/Documents/NetBeansProjects/StudentProductivityTracker/src/com/tracker/mvc/Main.java</file>
             <file>file:/D:/Documents/NetBeansProjects/StudentProductivityTracker/src/com/tracker/mvc/view/DashboardView.java</file>
-            <file>file:/D:/Documents/NetBeansProjects/StudentProductivityTracker/src/com/tracker/mvc/model/Task.java</file>
-            <file>file:/D:/Documents/NetBeansProjects/StudentProductivityTracker/src/com/tracker/mvc/db/DBConnection.java</file>
+            <file>file:/D:/Documents/NetBeansProjects/StudentProductivityTracker/src/com/tracker/mvc/dto/QuoteDto.java</file>
+            <file>file:/D:/Documents/NetBeansProjects/StudentProductivityTracker/src/com/tracker/mvc/dto/ReportDto.java</file>
+            <file>file:/D:/Documents/NetBeansProjects/StudentProductivityTracker/src/com/tracker/mvc/dto/ScheduleDto.java</file>
+            <file>file:/D:/Documents/NetBeansProjects/StudentProductivityTracker/src/com/tracker/mvc/dto/TaskDto.java</file>
+            <file>file:/D:/Documents/NetBeansProjects/StudentProductivityTracker/src/com/tracker/mvc/view/TaskAddView.java</file>
         </group>
     </open-files>
 </project-private>
