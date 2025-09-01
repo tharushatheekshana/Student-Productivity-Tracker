@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDate;
+import java.util.ArrayList;
 
 /**
  *
@@ -29,13 +30,13 @@ public class TaskModel {
     // Create table if it doesn't exist
     private void createTableIfNotExists() throws Exception {
         String sql = "CREATE TABLE IF NOT EXISTS tasks ("
-                   + "taskId INTEGER PRIMARY KEY AUTOINCREMENT, "
-                   + "subject TEXT NOT NULL, "
-                   + "description TEXT, "
-                   + "deadline TEXT, "
-                   + "completed INTEGER, "
-                   + "overdue INTEGER"
-                   + ");";
+                + "taskId INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + "subject TEXT NOT NULL, "
+                + "description TEXT, "
+                + "deadline TEXT, "
+                + "completed INTEGER, "
+                + "overdue INTEGER"
+                + ");";
         Statement stmt = CONNECTION.createStatement();
         stmt.execute(sql);
     }
@@ -109,4 +110,28 @@ public class TaskModel {
             return "Failed";
         }
     }
+
+    // Get all tasks
+    public ArrayList<TaskDto> getAllTasks() throws Exception {
+        ArrayList<TaskDto> tasks = new ArrayList<>();
+
+        String sql = "SELECT * FROM tasks";
+        PreparedStatement statement = CONNECTION.prepareStatement(sql);
+        ResultSet rst = statement.executeQuery();
+
+        while (rst.next()) {
+            TaskDto dto = new TaskDto(
+                    rst.getInt("taskId"),
+                    rst.getString("subject"),
+                    rst.getString("description"),
+                    LocalDate.parse(rst.getString("deadline")),
+                    rst.getInt("completed") == 1,
+                    rst.getInt("overdue") == 1
+            );
+            tasks.add(dto);
+        }
+
+        return tasks;
+    }
+
 }

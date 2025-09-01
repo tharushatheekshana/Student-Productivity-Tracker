@@ -6,6 +6,7 @@ package com.tracker.mvc.controller;
 
 import com.tracker.mvc.dto.TaskDto;
 import com.tracker.mvc.model.TaskModel;
+import java.util.ArrayList;
 
 /**
  *
@@ -19,5 +20,9 @@ public class TaskController {
     }
     public String saveTask(TaskDto taskDto) throws Exception{
         return taskModel.saveTask(taskDto);
+    }
+    
+    public ArrayList<TaskDto> getAllTasks() throws Exception{
+        return taskModel.getAllTasks();
     }
 }
