@@ -59,15 +59,15 @@ public class TaskModel {
     }
 
     // Search task by ID
-    public TaskDto searchTask(int taskId) throws Exception {
+    public TaskDto searchTask(String taskId) throws Exception {
         String sql = "SELECT * FROM tasks WHERE taskId = ?";
         PreparedStatement statement = CONNECTION.prepareStatement(sql);
-        statement.setInt(1, taskId);
+        statement.setString(1, taskId);
         ResultSet rst = statement.executeQuery();
 
         while (rst.next()) {
             TaskDto dto = new TaskDto(
-                    rst.getInt("taskId"),
+                    rst.getString("taskId"),
                     rst.getString("subject"),
                     rst.getString("description"),
                     LocalDate.parse(rst.getString("deadline")),
@@ -89,7 +89,7 @@ public class TaskModel {
         statement.setString(3, taskDto.getDeadline().toString());
         statement.setInt(4, taskDto.isCompleted() ? 1 : 0);
         statement.setInt(5, taskDto.isOverdue() ? 1 : 0);
-        statement.setInt(6, taskDto.getTaskId());
+        statement.setString(6, taskDto.getTaskId());
 
         if (statement.executeUpdate() > 0) {
             return "Success";
@@ -99,10 +99,10 @@ public class TaskModel {
     }
 
     // Delete a task
-    public String deleteTask(int taskId) throws Exception {
+    public String deleteTask(String taskId) throws Exception {
         String sql = "DELETE FROM tasks WHERE taskId=?";
         PreparedStatement statement = CONNECTION.prepareStatement(sql);
-        statement.setInt(1, taskId);
+        statement.setString(1, taskId);
 
         if (statement.executeUpdate() > 0) {
             return "Success";
@@ -121,7 +121,7 @@ public class TaskModel {
 
         while (rst.next()) {
             TaskDto dto = new TaskDto(
-                    rst.getInt("taskId"),
+                    rst.getString("taskId"),
                     rst.getString("subject"),
                     rst.getString("description"),
                     LocalDate.parse(rst.getString("deadline")),
@@ -133,5 +133,4 @@ public class TaskModel {
 
         return tasks;
     }
-
 }

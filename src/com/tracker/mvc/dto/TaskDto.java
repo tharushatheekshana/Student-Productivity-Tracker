@@ -11,7 +11,7 @@ import java.time.LocalDate;
  * @author Theekshana
  */
 public class TaskDto {
-    private int taskId;
+    private String taskId;
     private String subject;
     private String description;
     private LocalDate deadline;
@@ -21,7 +21,7 @@ public class TaskDto {
     public TaskDto() {
     }
 
-    public TaskDto(int taskId, String subject, String description, LocalDate deadline, boolean completed, boolean overdue) {
+    public TaskDto(String taskId, String subject, String description, LocalDate deadline, boolean completed, boolean overdue) {
         this.taskId = taskId;
         this.subject = subject;
         this.description = description;
@@ -30,17 +30,18 @@ public class TaskDto {
         this.overdue = overdue;
     }
 
+    
     /**
      * @return the taskId
      */
-    public int getTaskId() {
+    public String getTaskId() {
         return taskId;
     }
 
     /**
      * @param taskId the taskId to set
      */
-    public void setTaskId(int taskId) {
+    public void setTaskId(String taskId) {
         this.taskId = taskId;
     }
 

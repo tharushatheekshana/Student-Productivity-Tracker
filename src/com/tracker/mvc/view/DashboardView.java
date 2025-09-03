@@ -6,11 +6,13 @@ package com.tracker.mvc.view;
 
 import com.tracker.mvc.controller.TaskController;
 import com.tracker.mvc.dto.TaskDto;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import com.toedter.calendar.JDayChooser;
+import javax.swing.*;
+import java.awt.*;
+import java.time.LocalDate;
+import java.util.ArrayList;
 
 /**
  *
@@ -34,6 +36,11 @@ public class DashboardView extends javax.swing.JFrame {
         initComponents();
         this.setLocationRelativeTo(null);
         loadTasks();
+
+        jCalendar1.addPropertyChangeListener("calendar", evt -> {
+            colorCodeCalendar();
+        });
+
     }
 
     /**
@@ -53,7 +60,6 @@ public class DashboardView extends javax.swing.JFrame {
         descriptionLabel = new javax.swing.JLabel();
         txtSubject = new javax.swing.JTextField();
         txtDescription = new javax.swing.JTextField();
-        txtDeadline = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         addSubjectLabel = new javax.swing.JLabel();
         addDescriptionLabel = new javax.swing.JLabel();
@@ -61,6 +67,10 @@ public class DashboardView extends javax.swing.JFrame {
         btnSave = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblTask = new javax.swing.JTable();
+        btnUpdate = new javax.swing.JButton();
+        btnDelete = new javax.swing.JButton();
+        jCalendar1 = new com.toedter.calendar.JCalendar();
+        jDateChooser = new com.toedter.calendar.JDateChooser();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -116,12 +126,6 @@ public class DashboardView extends javax.swing.JFrame {
             }
         });
 
-        txtDeadline.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtDeadlineActionPerformed(evt);
-            }
-        });
-
         jLabel3.setText("Add Task");
 
         addSubjectLabel.setText("Subject");
@@ -148,68 +152,103 @@ public class DashboardView extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        tblTask.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblTaskMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tblTask);
+
+        btnUpdate.setText("Update");
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
+
+        btnDelete.setText("Delete");
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(addSubjectLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtSubject, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(addDescriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(addDeadlineLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtDescription, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtDeadline, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(btnSave)))
-                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addComponent(addSubjectLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(txtSubject))
+                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addComponent(addDescriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(addDeadlineLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(jDateChooser, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
+                                        .addComponent(txtDescription))))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(btnDelete)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 406, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnUpdate)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnSave)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 406, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jCalendar1, javax.swing.GroupLayout.PREFERRED_SIZE, 288, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(52, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(addSubjectLabel)
-                                    .addComponent(txtSubject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(txtDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(addDescriptionLabel)))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(txtDeadline, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addDeadlineLabel))
-                .addGap(18, 18, 18)
-                .addComponent(btnSave)
-                .addContainerGap(91, Short.MAX_VALUE))
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel3)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                            .addComponent(addSubjectLabel)
+                                            .addComponent(txtSubject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                        .addComponent(txtDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addComponent(addDescriptionLabel))
+                                .addGap(18, 18, 18)
+                                .addComponent(addDeadlineLabel))
+                            .addComponent(jDateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnDelete)
+                            .addComponent(btnUpdate)
+                            .addComponent(btnSave)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jCalendar1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(74, Short.MAX_VALUE))
         );
 
         pack();
@@ -225,12 +264,19 @@ public class DashboardView extends javax.swing.JFrame {
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         saveTask();
-        loadTasks();
     }//GEN-LAST:event_btnSaveActionPerformed
 
-    private void txtDeadlineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtDeadlineActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtDeadlineActionPerformed
+    private void tblTaskMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblTaskMouseClicked
+        searchTask();
+    }//GEN-LAST:event_tblTaskMouseClicked
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        UpdateTask();
+    }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        DeleteTask();
+    }//GEN-LAST:event_btnDeleteActionPerformed
 
     /**
      * @param args the command line arguments
@@ -261,9 +307,13 @@ public class DashboardView extends javax.swing.JFrame {
     private javax.swing.JLabel addDeadlineLabel;
     private javax.swing.JLabel addDescriptionLabel;
     private javax.swing.JLabel addSubjectLabel;
+    private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnSave;
+    private javax.swing.JButton btnUpdate;
     private javax.swing.JLabel deadlineLabel;
     private javax.swing.JLabel descriptionLabel;
+    private com.toedter.calendar.JCalendar jCalendar1;
+    private com.toedter.calendar.JDateChooser jDateChooser;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -271,7 +321,6 @@ public class DashboardView extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel subjectLabel;
     private javax.swing.JTable tblTask;
-    private javax.swing.JTextField txtDeadline;
     private javax.swing.JTextField txtDescription;
     private javax.swing.JTextField txtSubject;
     // End of variables declaration//GEN-END:variables
@@ -279,8 +328,14 @@ public class DashboardView extends javax.swing.JFrame {
     private void saveTask() {
         TaskDto dto = new TaskDto();
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDate deadline = LocalDate.parse(txtDeadline.getText(), formatter);
+        java.util.Date selectedDate = jDateChooser.getDate();
+        if (selectedDate == null) {
+            JOptionPane.showMessageDialog(this, "Please select a deadline");
+            return;
+        }
+        LocalDate deadline = selectedDate.toInstant()
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate();
 
         dto.setSubject(txtSubject.getText());
         dto.setDescription(txtDescription.getText());
@@ -288,9 +343,12 @@ public class DashboardView extends javax.swing.JFrame {
 
         try {
             String result = taskController.saveTask(dto);
-            System.out.println(result);
+            JOptionPane.showMessageDialog(this, result);
+            loadTasks();
+            clear();
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Error saving task: " + ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
@@ -318,10 +376,150 @@ public class DashboardView extends javax.swing.JFrame {
                 dtm.addRow(rowData);
             }
 
+            colorCodeCalendar();
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error loading tasks: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
+    public void clear() {
+        txtSubject.setText("");
+        txtDescription.setText("");
+        jDateChooser.setDate(null);
+
+    }
+
+    private void searchTask() {
+        int selectedRow = tblTask.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a task");
+            return;
+        }
+
+        String id = tblTask.getValueAt(selectedRow, 0).toString();
+        try {
+            TaskDto dto = taskController.searchTask(id);
+            if (dto != null) {
+                txtSubject.setText(dto.getSubject());
+                txtDescription.setText(dto.getDescription());
+                jDateChooser.setDate(java.sql.Date.valueOf(dto.getDeadline()));
+            } else {
+                JOptionPane.showMessageDialog(this, "Task Not Found");
+            }
+        } catch (Exception ex) {
+            System.getLogger(DashboardView.class.getName())
+                    .log(System.Logger.Level.ERROR, (String) null, ex);
+        }
+    }
+
+    private void UpdateTask() {
+        int selectedRow = tblTask.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a task to update");
+            return;
+        }
+
+        String id = tblTask.getValueAt(selectedRow, 0).toString();
+        TaskDto dto = new TaskDto();
+        dto.setTaskId(id);
+        dto.setSubject(txtSubject.getText());
+        dto.setDescription(txtDescription.getText());
+
+        java.util.Date selectedDate = jDateChooser.getDate();
+        if (selectedDate == null) {
+            JOptionPane.showMessageDialog(this, "Please select a deadline");
+            return;
+        }
+        LocalDate deadline = selectedDate.toInstant()
+                .atZone(java.time.ZoneId.systemDefault())
+                .toLocalDate();
+        dto.setDeadline(deadline);
+
+        try {
+            String result = taskController.updateTask(dto);
+            JOptionPane.showMessageDialog(this, result);
+            loadTasks();
+            clear();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error updating task: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void DeleteTask() {
+        int selectedRow = tblTask.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a task to delete");
+            return;
+        }
+
+        String id = tblTask.getValueAt(selectedRow, 0).toString();
+
+        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this task?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+            String result = taskController.deleteTask(id);
+            JOptionPane.showMessageDialog(this, result);
+            loadTasks();
+            clear();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error deleting task: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void colorCodeCalendar() {
+        try {
+            ArrayList<TaskDto> tasks = taskController.getAllTasks();
+            JDayChooser dayChooser = jCalendar1.getDayChooser();
+            Component[] dayButtons = dayChooser.getDayPanel().getComponents();
+
+            // Reset all buttons
+            for (Component c : dayButtons) {
+                if (c instanceof JButton button) {
+                    button.setBackground(Color.WHITE);
+                    button.setToolTipText(null);
+                }
+            }
+
+            LocalDate today = LocalDate.now();
+            int currentMonth = jCalendar1.getMonthChooser().getMonth() + 1;
+
+            for (TaskDto task : tasks) {
+                LocalDate deadline = task.getDeadline();
+                if (deadline.getMonthValue() == currentMonth
+                        && deadline.getYear() == jCalendar1.getYearChooser().getYear()) {
+                    int dayOfMonth = deadline.getDayOfMonth();
+
+                    for (Component c : dayButtons) {
+                        if (c instanceof JButton button) {
+                            try {
+                                int buttonDay = Integer.parseInt(button.getText());
+                                if (buttonDay == dayOfMonth) {
+                                    if (task.isCompleted()) {
+                                        button.setBackground(Color.GREEN);
+                                    } else if (deadline.isBefore(today)) {
+                                        button.setBackground(Color.RED);
+                                    } else if (deadline.equals(today)) {
+                                        button.setBackground(Color.ORANGE);
+                                    } else {
+                                        button.setBackground(Color.YELLOW);
+                                    }
+                                    button.setToolTipText(task.getSubject());
+                                }
+                            } catch (NumberFormatException ignored) {
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
