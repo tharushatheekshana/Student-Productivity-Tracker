@@ -5,6 +5,7 @@
 package com.tracker.mvc;
 
 import com.tracker.mvc.view.DashboardView;
+import com.tracker.mvc.view.TimetableView;
 
 /**
  *
@@ -12,6 +13,7 @@ import com.tracker.mvc.view.DashboardView;
  */
 public class Main {
     public static void main(String[] args) {
-         new DashboardView().setVisible(true);
+//         new DashboardView().setVisible(true);
+         new TimetableView().setVisible(true);
     }
 }
