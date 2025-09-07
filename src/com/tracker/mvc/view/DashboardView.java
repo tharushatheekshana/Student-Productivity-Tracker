@@ -7,9 +7,7 @@ package com.tracker.mvc.view;
 import com.tracker.mvc.controller.TaskController;
 import com.tracker.mvc.dto.TaskDto;
 import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
-import com.toedter.calendar.JDayChooser;
-import javax.swing.*;
+import com.tracker.mvc.event.EventMenuSelected;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,16 +29,23 @@ public class DashboardView extends javax.swing.JFrame {
         try {
             this.taskController = new TaskController();
         } catch (Exception ex) {
-            System.getLogger(DashboardView.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            System.getLogger(DashboardView.class.getName())
+                    .log(System.Logger.Level.ERROR, (String) null, ex);
         }
+
         initComponents();
+//        panelTodayTasks.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        menu.initMoving(DashboardView.this);
         this.setLocationRelativeTo(null);
-        loadTasks();
 
-        jCalendar1.addPropertyChangeListener("calendar", evt -> {
-            colorCodeCalendar();
+//        loadTasks();
+
+        menu.addEventMenuSelected(new EventMenuSelected() {
+            @Override
+            public void selected(int index) {
+                System.out.println("Selected Index : " + index);
+            }
         });
-
     }
 
     /**
@@ -52,231 +57,32 @@ public class DashboardView extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        subjectLabel = new javax.swing.JLabel();
-        deadlineLabel = new javax.swing.JLabel();
-        descriptionLabel = new javax.swing.JLabel();
-        txtSubject = new javax.swing.JTextField();
-        txtDescription = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
-        addSubjectLabel = new javax.swing.JLabel();
-        addDescriptionLabel = new javax.swing.JLabel();
-        addDeadlineLabel = new javax.swing.JLabel();
-        btnSave = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tblTask = new javax.swing.JTable();
-        btnUpdate = new javax.swing.JButton();
-        btnDelete = new javax.swing.JButton();
-        jCalendar1 = new com.toedter.calendar.JCalendar();
-        jDateChooser = new com.toedter.calendar.JDateChooser();
+        menu = new com.tracker.mvc.component.Menu();
+        dashboard1 = new com.tracker.mvc.form.Dashboard();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        jLabel1.setFont(new java.awt.Font("Inter 18pt ExtraBold", 0, 18)); // NOI18N
-        jLabel1.setText("Welcome back, Sarah!");
-
-        jLabel2.setText("Upcoming ");
-
-        jPanel1.setBackground(new java.awt.Color(204, 255, 255));
-
-        subjectLabel.setText("Maths");
-
-        deadlineLabel.setText("Tommorow");
-
-        descriptionLabel.setText("Maths Home Work");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(descriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(subjectLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
-                        .addComponent(deadlineLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE))))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(subjectLabel)
-                    .addComponent(deadlineLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(descriptionLabel)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        txtSubject.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtSubjectActionPerformed(evt);
-            }
-        });
-
-        txtDescription.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                txtDescriptionActionPerformed(evt);
-            }
-        });
-
-        jLabel3.setText("Add Task");
-
-        addSubjectLabel.setText("Subject");
-
-        addDescriptionLabel.setText("Description");
-
-        addDeadlineLabel.setText("Deadline");
-
-        btnSave.setText("Save");
-        btnSave.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnSaveActionPerformed(evt);
-            }
-        });
-
-        tblTask.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        tblTask.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tblTaskMouseClicked(evt);
-            }
-        });
-        jScrollPane1.setViewportView(tblTask);
-
-        btnUpdate.setText("Update");
-        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnUpdateActionPerformed(evt);
-            }
-        });
-
-        btnDelete.setText("Delete");
-        btnDelete.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDeleteActionPerformed(evt);
-            }
-        });
+        setBackground(new java.awt.Color(255, 255, 255));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addComponent(addSubjectLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(txtSubject))
-                                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addComponent(addDescriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(addDeadlineLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(jDateChooser, javax.swing.GroupLayout.DEFAULT_SIZE, 133, Short.MAX_VALUE)
-                                        .addComponent(txtDescription))))))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(btnDelete)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnUpdate)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnSave)))
+                .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 406, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jCalendar1, javax.swing.GroupLayout.PREFERRED_SIZE, 288, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addComponent(dashboard1, javax.swing.GroupLayout.DEFAULT_SIZE, 697, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel3)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                            .addComponent(addSubjectLabel)
-                                            .addComponent(txtSubject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(txtDescription, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(addDescriptionLabel))
-                                .addGap(18, 18, 18)
-                                .addComponent(addDeadlineLabel))
-                            .addComponent(jDateChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(btnDelete)
-                            .addComponent(btnUpdate)
-                            .addComponent(btnSave)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jCalendar1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(74, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(dashboard1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void txtSubjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSubjectActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtSubjectActionPerformed
-
-    private void txtDescriptionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtDescriptionActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_txtDescriptionActionPerformed
-
-    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        saveTask();
-    }//GEN-LAST:event_btnSaveActionPerformed
-
-    private void tblTaskMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblTaskMouseClicked
-        searchTask();
-    }//GEN-LAST:event_tblTaskMouseClicked
-
-    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-        UpdateTask();
-    }//GEN-LAST:event_btnUpdateActionPerformed
-
-    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-        DeleteTask();
-    }//GEN-LAST:event_btnDeleteActionPerformed
 
     /**
      * @param args the command line arguments
@@ -304,222 +110,235 @@ public class DashboardView extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel addDeadlineLabel;
-    private javax.swing.JLabel addDescriptionLabel;
-    private javax.swing.JLabel addSubjectLabel;
-    private javax.swing.JButton btnDelete;
-    private javax.swing.JButton btnSave;
-    private javax.swing.JButton btnUpdate;
-    private javax.swing.JLabel deadlineLabel;
-    private javax.swing.JLabel descriptionLabel;
-    private com.toedter.calendar.JCalendar jCalendar1;
-    private com.toedter.calendar.JDateChooser jDateChooser;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JLabel subjectLabel;
-    private javax.swing.JTable tblTask;
-    private javax.swing.JTextField txtDescription;
-    private javax.swing.JTextField txtSubject;
+    private com.tracker.mvc.form.Dashboard dashboard1;
+    private com.tracker.mvc.component.Menu menu;
     // End of variables declaration//GEN-END:variables
 
-    private void saveTask() {
-        TaskDto dto = new TaskDto();
+//    private void saveTask() {
+//        TaskDto dto = new TaskDto();
+//
+//        java.util.Date selectedDate = jDateChooser.getDate();
+//        if (selectedDate == null) {
+//            JOptionPane.showMessageDialog(this, "Please select a deadline");
+//            return;
+//        }
+//        LocalDate deadline = selectedDate.toInstant()
+//                .atZone(java.time.ZoneId.systemDefault())
+//                .toLocalDate();
+//
+//        dto.setSubject(txtSubject.getText());
+//        dto.setDescription(txtDescription.getText());
+//        dto.setDeadline(deadline);
+//
+//        try {
+//            String result = taskController.saveTask(dto);
+//            JOptionPane.showMessageDialog(this, result);
+//            loadTasks();
+//            clear();
+//        } catch (Exception ex) {
+//            JOptionPane.showMessageDialog(this, "Error saving task: " + ex.getMessage());
+//            ex.printStackTrace();
+//        }
+//    }
+//    private void loadTasks() {
+//        panelTodayTasks.removeAll(); // Clear old cards
+//        LocalDate today = LocalDate.now();
+//
+//        try {
+//            ArrayList<TaskDto> allTasks = taskController.getAllTasks();
+//
+//            for (TaskDto task : allTasks) {
+//                // Only add card for today's tasks
+//                if (task.getDeadline().equals(today)) {
+//                    com.tracker.mvc.component.Card newCard = new com.tracker.mvc.component.Card();
+//
+//                    // Wrap subject and description with HTML for text wrapping
+//                    final String subjectHtml = "<html><p style='width:180px;'>" + task.getSubject() + "</p></html>";
+//                    final String descriptionHtml = "<html><p style='width:180px;'>" + task.getDescription() + "</p></html>";
+//
+//                    // Initial remaining time
+//                    java.time.LocalDateTime now = java.time.LocalDateTime.now();
+//                    java.time.LocalDateTime deadlineTime = task.getDeadline().atStartOfDay().plusDays(1);
+//                    long secondsRemaining = java.time.Duration.between(now, deadlineTime).getSeconds();
+//                    String remainingTime = formatRemainingTime(secondsRemaining);
+//
+//                    // Set initial card data
+//                    newCard.setData(new com.tracker.mvc.model.Model_Card(
+//                            null, subjectHtml, descriptionHtml, remainingTime
+//                    ));
+//
+//                    newCard.setPreferredSize(new Dimension(250, 150));
+//                    panelTodayTasks.add(newCard);
+//
+//                    // Timer to update only remaining time
+//                    javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
+//                        long secRemaining = java.time.Duration.between(java.time.LocalDateTime.now(), deadlineTime).getSeconds();
+//                        String updatedTime = formatRemainingTime(secRemaining);
+//
+//                        newCard.setData(new com.tracker.mvc.model.Model_Card(
+//                                null, subjectHtml, descriptionHtml, updatedTime
+//                        ));
+//                        newCard.repaint();
+//                    });
+//                    timer.start();
+//                }
+//            }
+//
+//            panelTodayTasks.revalidate();
+//            panelTodayTasks.repaint();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            JOptionPane.showMessageDialog(this, "Error loading tasks: " + e.getMessage());
+//        }
+//    }
+//
+//    private String formatRemainingTime(long totalSeconds) {
+//        if (totalSeconds <= 0) {
+//            return "Time up";
+//        }
+//
+//        long hours = totalSeconds / 3600;
+//        long minutes = (totalSeconds % 3600) / 60;
+//        long seconds = totalSeconds % 60;
+//
+//        return String.format("%02d:%02d:%02d remaining", hours, minutes, seconds);
+//    }
 
-        java.util.Date selectedDate = jDateChooser.getDate();
-        if (selectedDate == null) {
-            JOptionPane.showMessageDialog(this, "Please select a deadline");
-            return;
-        }
-        LocalDate deadline = selectedDate.toInstant()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDate();
-
-        dto.setSubject(txtSubject.getText());
-        dto.setDescription(txtDescription.getText());
-        dto.setDeadline(deadline);
-
-        try {
-            String result = taskController.saveTask(dto);
-            JOptionPane.showMessageDialog(this, result);
-            loadTasks();
-            clear();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error saving task: " + ex.getMessage());
-            ex.printStackTrace();
-        }
-    }
-
-    private void loadTasks() {
-        String[] columns = {"Id", "Subject", "Description", "Deadline"};
-        DefaultTableModel dtm = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        tblTask.setModel(dtm);
-
-        try {
-            ArrayList<TaskDto> taskDtos = taskController.getAllTasks();
-
-            for (TaskDto dto : taskDtos) {
-                Object[] rowData = {
-                    dto.getTaskId(),
-                    dto.getSubject(),
-                    dto.getDescription(),
-                    dto.getDeadline()
-                };
-                dtm.addRow(rowData);
-            }
-
-            colorCodeCalendar();
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error loading tasks: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    public void clear() {
-        txtSubject.setText("");
-        txtDescription.setText("");
-        jDateChooser.setDate(null);
-
-    }
-
-    private void searchTask() {
-        int selectedRow = tblTask.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a task");
-            return;
-        }
-
-        String id = tblTask.getValueAt(selectedRow, 0).toString();
-        try {
-            TaskDto dto = taskController.searchTask(id);
-            if (dto != null) {
-                txtSubject.setText(dto.getSubject());
-                txtDescription.setText(dto.getDescription());
-                jDateChooser.setDate(java.sql.Date.valueOf(dto.getDeadline()));
-            } else {
-                JOptionPane.showMessageDialog(this, "Task Not Found");
-            }
-        } catch (Exception ex) {
-            System.getLogger(DashboardView.class.getName())
-                    .log(System.Logger.Level.ERROR, (String) null, ex);
-        }
-    }
-
-    private void UpdateTask() {
-        int selectedRow = tblTask.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a task to update");
-            return;
-        }
-
-        String id = tblTask.getValueAt(selectedRow, 0).toString();
-        TaskDto dto = new TaskDto();
-        dto.setTaskId(id);
-        dto.setSubject(txtSubject.getText());
-        dto.setDescription(txtDescription.getText());
-
-        java.util.Date selectedDate = jDateChooser.getDate();
-        if (selectedDate == null) {
-            JOptionPane.showMessageDialog(this, "Please select a deadline");
-            return;
-        }
-        LocalDate deadline = selectedDate.toInstant()
-                .atZone(java.time.ZoneId.systemDefault())
-                .toLocalDate();
-        dto.setDeadline(deadline);
-
-        try {
-            String result = taskController.updateTask(dto);
-            JOptionPane.showMessageDialog(this, result);
-            loadTasks();
-            clear();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error updating task: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void DeleteTask() {
-        int selectedRow = tblTask.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(this, "Please select a task to delete");
-            return;
-        }
-
-        String id = tblTask.getValueAt(selectedRow, 0).toString();
-
-        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this task?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
-        if (confirm != JOptionPane.YES_OPTION) {
-            return;
-        }
-
-        try {
-            String result = taskController.deleteTask(id);
-            JOptionPane.showMessageDialog(this, result);
-            loadTasks();
-            clear();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error deleting task: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void colorCodeCalendar() {
-        try {
-            ArrayList<TaskDto> tasks = taskController.getAllTasks();
-            JDayChooser dayChooser = jCalendar1.getDayChooser();
-            Component[] dayButtons = dayChooser.getDayPanel().getComponents();
-
-            // Reset all buttons
-            for (Component c : dayButtons) {
-                if (c instanceof JButton button) {
-                    button.setBackground(Color.WHITE);
-                    button.setToolTipText(null);
-                }
-            }
-
-            LocalDate today = LocalDate.now();
-            int currentMonth = jCalendar1.getMonthChooser().getMonth() + 1;
-
-            for (TaskDto task : tasks) {
-                LocalDate deadline = task.getDeadline();
-                if (deadline.getMonthValue() == currentMonth
-                        && deadline.getYear() == jCalendar1.getYearChooser().getYear()) {
-                    int dayOfMonth = deadline.getDayOfMonth();
-
-                    for (Component c : dayButtons) {
-                        if (c instanceof JButton button) {
-                            try {
-                                int buttonDay = Integer.parseInt(button.getText());
-                                if (buttonDay == dayOfMonth) {
-                                    if (task.isCompleted()) {
-                                        button.setBackground(Color.GREEN);
-                                    } else if (deadline.isBefore(today)) {
-                                        button.setBackground(Color.RED);
-                                    } else if (deadline.equals(today)) {
-                                        button.setBackground(Color.ORANGE);
-                                    } else {
-                                        button.setBackground(Color.YELLOW);
-                                    }
-                                    button.setToolTipText(task.getSubject());
-                                }
-                            } catch (NumberFormatException ignored) {
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    public void clear() {
+//        txtSubject.setText("");
+//        txtDescription.setText("");
+//        jDateChooser.setDate(null);
+//
+//    }
+//    private void searchTask() {
+//        int selectedRow = tblTask.getSelectedRow();
+//        if (selectedRow == -1) {
+//            JOptionPane.showMessageDialog(this, "Please select a task");
+//            return;
+//        }
+//
+//        String id = tblTask.getValueAt(selectedRow, 0).toString();
+//        try {
+//            TaskDto dto = taskController.searchTask(id);
+//            if (dto != null) {
+//                txtSubject.setText(dto.getSubject());
+//                txtDescription.setText(dto.getDescription());
+//                jDateChooser.setDate(java.sql.Date.valueOf(dto.getDeadline()));
+//            } else {
+//                JOptionPane.showMessageDialog(this, "Task Not Found");
+//            }
+//        } catch (Exception ex) {
+//            System.getLogger(DashboardView.class.getName())
+//                    .log(System.Logger.Level.ERROR, (String) null, ex);
+//        }
+//    }
+//
+//    private void UpdateTask() {
+//        int selectedRow = tblTask.getSelectedRow();
+//        if (selectedRow == -1) {
+//            JOptionPane.showMessageDialog(this, "Please select a task to update");
+//            return;
+//        }
+//
+//        String id = tblTask.getValueAt(selectedRow, 0).toString();
+//        TaskDto dto = new TaskDto();
+//        dto.setTaskId(id);
+//        dto.setSubject(txtSubject.getText());
+//        dto.setDescription(txtDescription.getText());
+//
+//        java.util.Date selectedDate = jDateChooser.getDate();
+//        if (selectedDate == null) {
+//            JOptionPane.showMessageDialog(this, "Please select a deadline");
+//            return;
+//        }
+//        LocalDate deadline = selectedDate.toInstant()
+//                .atZone(java.time.ZoneId.systemDefault())
+//                .toLocalDate();
+//        dto.setDeadline(deadline);
+//
+//        try {
+//            String result = taskController.updateTask(dto);
+//            JOptionPane.showMessageDialog(this, result);
+//            loadTasks();
+//            clear();
+//        } catch (Exception e) {
+//            JOptionPane.showMessageDialog(this, "Error updating task: " + e.getMessage());
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    private void DeleteTask() {
+//        int selectedRow = tblTask.getSelectedRow();
+//        if (selectedRow == -1) {
+//            JOptionPane.showMessageDialog(this, "Please select a task to delete");
+//            return;
+//        }
+//
+//        String id = tblTask.getValueAt(selectedRow, 0).toString();
+//
+//        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this task?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+//        if (confirm != JOptionPane.YES_OPTION) {
+//            return;
+//        }
+//
+//        try {
+//            String result = taskController.deleteTask(id);
+//            JOptionPane.showMessageDialog(this, result);
+//            loadTasks();
+//            clear();
+//        } catch (Exception e) {
+//            JOptionPane.showMessageDialog(this, "Error deleting task: " + e.getMessage());
+//            e.printStackTrace();
+//        }
+//    }
+//    private void colorCodeCalendar() {
+//        try {
+//            ArrayList<TaskDto> tasks = taskController.getAllTasks();
+//            JDayChooser dayChooser = jCalendar1.getDayChooser();
+//            Component[] dayButtons = dayChooser.getDayPanel().getComponents();
+//
+//            // Reset all buttons
+//            for (Component c : dayButtons) {
+//                if (c instanceof JButton button) {
+//                    button.setBackground(Color.WHITE);
+//                    button.setToolTipText(null);
+//                }
+//            }
+//            
+//            LocalDate today = LocalDate.now();
+//            int currentMonth = jCalendar1.getMonthChooser().getMonth() + 1;
+//            
+//            for (TaskDto task : tasks) {
+//                LocalDate deadline = task.getDeadline();
+//                if (deadline.getMonthValue() == currentMonth
+//                        && deadline.getYear() == jCalendar1.getYearChooser().getYear()) {
+//                    int dayOfMonth = deadline.getDayOfMonth();
+//                    
+//                    for (Component c : dayButtons) {
+//                        if (c instanceof JButton button) {
+//                            try {
+//                                int buttonDay = Integer.parseInt(button.getText());
+//                                if (buttonDay == dayOfMonth) {
+//                                    if (task.isCompleted()) {
+//                                        button.setBackground(Color.GREEN);
+//                                    } else if (deadline.isBefore(today)) {
+//                                        button.setBackground(Color.RED);
+//                                    } else if (deadline.equals(today)) {
+//                                        button.setBackground(Color.ORANGE);
+//                                    } else {
+//                                        button.setBackground(Color.YELLOW);
+//                                    }
+//                                    button.setToolTipText(task.getSubject());
+//                                }
+//                            } catch (NumberFormatException ignored) {
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 }
