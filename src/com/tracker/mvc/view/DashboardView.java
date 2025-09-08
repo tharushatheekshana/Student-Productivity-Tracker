@@ -8,9 +8,14 @@ import com.tracker.mvc.controller.TaskController;
 import com.tracker.mvc.dto.TaskDto;
 import javax.swing.JOptionPane;
 import com.tracker.mvc.event.EventMenuSelected;
+import com.tracker.mvc.form.Dashboard;
+import com.tracker.mvc.form.Form1;
+import com.tracker.mvc.form.Form2;
+import com.tracker.mvc.form.Form3;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import javax.swing.JComponent;
 
 /**
  *
@@ -39,13 +44,27 @@ public class DashboardView extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
 
 //        loadTasks();
-
-        menu.addEventMenuSelected(new EventMenuSelected() {
-            @Override
-            public void selected(int index) {
-                System.out.println("Selected Index : " + index);
+        menu.addEventMenuSelected((int index) -> {
+            switch (index) {
+                case 0 ->
+                    setForm(new Dashboard());
+                case 1 ->
+                    setForm(new Form1());
+                case 2 ->
+                    setForm(new Form2());
+                case 3 ->
+                    setForm(new Form3());
+                default -> {
+                }
             }
         });
+    }
+
+    private void setForm(JComponent com) {
+        mainPanel.removeAll();
+        mainPanel.add(com);
+        mainPanel.repaint();
+        mainPanel.revalidate();
     }
 
     /**
@@ -57,28 +76,52 @@ public class DashboardView extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        panelBorder1 = new com.tracker.mvc.swing.PanelBorder();
         menu = new com.tracker.mvc.component.Menu();
-        dashboard1 = new com.tracker.mvc.form.Dashboard();
+        mainPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
+
+        panelBorder1.setAlignmentX(0.0F);
+        panelBorder1.setAlignmentY(0.0F);
+
+        menu.setAlignmentX(0.0F);
+        menu.setAlignmentY(0.0F);
+
+        mainPanel.setAlignmentX(0.0F);
+        mainPanel.setAlignmentY(0.0F);
+        mainPanel.setOpaque(false);
+        mainPanel.setLayout(new java.awt.BorderLayout());
+
+        javax.swing.GroupLayout panelBorder1Layout = new javax.swing.GroupLayout(panelBorder1);
+        panelBorder1.setLayout(panelBorder1Layout);
+        panelBorder1Layout.setHorizontalGroup(
+            panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelBorder1Layout.createSequentialGroup()
+                .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 677, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        panelBorder1Layout.setVerticalGroup(
+            panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBorder1Layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(dashboard1, javax.swing.GroupLayout.DEFAULT_SIZE, 697, Short.MAX_VALUE))
+            .addComponent(panelBorder1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(dashboard1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(0, 0, Short.MAX_VALUE))
+            .addComponent(panelBorder1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -110,8 +153,9 @@ public class DashboardView extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.tracker.mvc.form.Dashboard dashboard1;
+    private javax.swing.JPanel mainPanel;
     private com.tracker.mvc.component.Menu menu;
+    private com.tracker.mvc.swing.PanelBorder panelBorder1;
     // End of variables declaration//GEN-END:variables
 
 //    private void saveTask() {
@@ -204,7 +248,6 @@ public class DashboardView extends javax.swing.JFrame {
 //
 //        return String.format("%02d:%02d:%02d remaining", hours, minutes, seconds);
 //    }
-
 //    public void clear() {
 //        txtSubject.setText("");
 //        txtDescription.setText("");
