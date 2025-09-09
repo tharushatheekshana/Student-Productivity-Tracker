@@ -5,16 +5,10 @@
 package com.tracker.mvc.view;
 
 import com.tracker.mvc.controller.TaskController;
-import com.tracker.mvc.dto.TaskDto;
-import javax.swing.JOptionPane;
-import com.tracker.mvc.event.EventMenuSelected;
 import com.tracker.mvc.form.Dashboard;
 import com.tracker.mvc.form.Form1;
 import com.tracker.mvc.form.Form2;
 import com.tracker.mvc.form.Form3;
-import java.awt.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import javax.swing.JComponent;
 
 /**
@@ -26,6 +20,10 @@ public class DashboardView extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DashboardView.class.getName());
 
     private TaskController taskController;
+    private Dashboard dashboardForm = new Dashboard();
+    private Form1 form1 = new Form1();
+    private Form2 form2 = new Form2();
+    private Form3 form3 = new Form3();
 
     /**
      * Creates new form DashboardView
@@ -58,6 +56,8 @@ public class DashboardView extends javax.swing.JFrame {
                 }
             }
         });
+
+        setForm(new Dashboard());
     }
 
     private void setForm(JComponent com) {

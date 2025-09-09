@@ -104,12 +104,15 @@ public class Dashboard extends javax.swing.JPanel {
     public void loadTasks() {
         panelTodayTasks.removeAll(); // Clear old cards
         LocalDate today = LocalDate.now();
+        boolean hasTasks = false;
 
         try {
             ArrayList<TaskDto> allTasks = taskController.getAllTasks();
 
             for (TaskDto task : allTasks) {
                 if (task.getDeadline().equals(today)) {
+                    hasTasks = true; // Found at least one
+
                     com.tracker.mvc.component.Card newCard = new com.tracker.mvc.component.Card();
 
                     String subjectHtml = "<html><p style='width:180px;'>" + task.getSubject() + "</p></html>";
@@ -136,6 +139,14 @@ public class Dashboard extends javax.swing.JPanel {
                     });
                     timer.start();
                 }
+            }
+
+            // If no tasks, show message
+            if (!hasTasks) {
+                javax.swing.JLabel noTaskLabel = new javax.swing.JLabel("No tasks today");
+                noTaskLabel.setFont(new java.awt.Font("Poppins", 0, 16));
+                noTaskLabel.setForeground(new java.awt.Color(120, 120, 120));
+                panelTodayTasks.add(noTaskLabel);
             }
 
             panelTodayTasks.revalidate();
