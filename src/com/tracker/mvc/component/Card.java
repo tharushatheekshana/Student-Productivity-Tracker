@@ -6,8 +6,21 @@ import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import javax.swing.ImageIcon;
 
 public class Card extends javax.swing.JPanel {
+
+    private Color color1;
+    private Color color2;
+
+    public Card() {
+        initComponents();
+        setOpaque(false);
+        color1 = Color.decode("#000046"); // start color
+        color2 = Color.decode("#1CB5E0");
+        setMinimumSize(new java.awt.Dimension(250, 150));
+        setMaximumSize(new java.awt.Dimension(250, 150));
+    }
 
     public Color getColor1() {
         return color1;
@@ -25,27 +38,22 @@ public class Card extends javax.swing.JPanel {
         this.color2 = color2;
     }
 
-    private Color color1;
-    private Color color2;
-
-    public Card() {
-        initComponents();
-        setOpaque(false);
-        color1 = Color.decode("#000046"); // start color (red)
-        color2 = Color.decode("#1CB5E0");
-
-        setMinimumSize(new java.awt.Dimension(250, 150));
-        setMaximumSize(new java.awt.Dimension(250, 150));
-
-    }
-
     public void setData(Model_Card data) {
-        lbIcon.setIcon(data.getIcon());
-        lbTitle.setText(data.getTitle());
-        lbValues.setText(data.getValues());
-        String description = "This is a long task description that should wrap inside the card.";
-        lbDescription.setText("<html><p style='width:200px;'>" + description + "</p></html>");
+        // Set icon or fallback to a default icon if null
+        ImageIcon icon = (ImageIcon) data.getIcon();
+        if (icon != null) {
+            lbIcon.setIcon(icon);
+        } else {
+            lbIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/tracker/mvc/icon/stock.png")));
+        }
 
+        lbTitle.setText(data.getTitle() != null ? data.getTitle() : "");
+        lbValues.setText(data.getValues() != null ? data.getValues() : "");
+        if (data.getDescription() != null) {
+            lbDescription.setText("<html><p style='width:200px;'>" + data.getDescription() + "</p></html>");
+        } else {
+            lbDescription.setText("");
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -107,12 +115,15 @@ public class Card extends javax.swing.JPanel {
     protected void paintComponent(Graphics grphcs) {
         Graphics2D g2 = (Graphics2D) grphcs;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        GradientPaint g = new GradientPaint(0, 0, color1, 0, getHeight(), color2);
-        g2.setPaint(g);
+
+        GradientPaint gradient = new GradientPaint(0, 0, color1, 0, getHeight(), color2);
+        g2.setPaint(gradient);
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+
         g2.setColor(new Color(255, 255, 255, 50));
         g2.fillOval(getWidth() - (getHeight() / 2), 10, getHeight(), getHeight());
         g2.fillOval(getWidth() - (getHeight() / 2) - 20, getHeight() / 2 + 20, getHeight(), getHeight());
+
         super.paintComponent(grphcs);
     }
 
@@ -122,4 +133,17 @@ public class Card extends javax.swing.JPanel {
     private javax.swing.JLabel lbTitle;
     private javax.swing.JLabel lbValues;
     // End of variables declaration//GEN-END:variables
+
+    public String getTitleText() {
+        return lbTitle.getText();
+    }
+
+    public String getDescriptionText() {
+        return lbDescription.getText();
+    }
+
+    public void setValuesText(String text) {
+        lbValues.setText(text);
+    }
+
 }

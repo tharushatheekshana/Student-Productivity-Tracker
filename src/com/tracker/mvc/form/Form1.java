@@ -70,7 +70,6 @@ public class Form1 extends javax.swing.JPanel {
 
         initComponents();
         setupWeeklyChart();
-        setupTaskPanel();
         setupWeeklyChart();
         jCalendar1.addPropertyChangeListener("calendar", evt -> {
             colorCodeCalendar();
@@ -102,7 +101,8 @@ public class Form1 extends javax.swing.JPanel {
         jCalendar1 = new com.toedter.calendar.JCalendar();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblTask = new javax.swing.JTable();
-        taskPanel = new javax.swing.JPanel();
+
+        setPreferredSize(new java.awt.Dimension(710, 327));
 
         btnUpdate.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         btnUpdate.setText("Update");
@@ -227,29 +227,17 @@ public class Form1 extends javax.swing.JPanel {
         });
         jScrollPane2.setViewportView(tblTask);
 
-        javax.swing.GroupLayout taskPanelLayout = new javax.swing.GroupLayout(taskPanel);
-        taskPanel.setLayout(taskPanelLayout);
-        taskPanelLayout.setHorizontalGroup(
-            taskPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        taskPanelLayout.setVerticalGroup(
-            taskPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(taskPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(6, 6, 6)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 272, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jCalendar1, javax.swing.GroupLayout.PREFERRED_SIZE, 288, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -259,16 +247,13 @@ public class Form1 extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(8, 8, 8)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jCalendar1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(taskPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jCalendar1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -309,16 +294,12 @@ public class Form1 extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JPanel taskPanel;
     private javax.swing.JTable tblTask;
     private javax.swing.JTextField txtDescription;
     private javax.swing.JTextField txtSubject;
     // End of variables declaration//GEN-END:variables
 
-    private void setupTaskPanel() {
-        taskPanel.setLayout(new BoxLayout(taskPanel, BoxLayout.Y_AXIS));
-        taskPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-    }
+    
 
     private void startCountdown() {
         countdownTimer = new Timer(1000, e -> loadTasks());
@@ -442,7 +423,6 @@ public class Form1 extends javax.swing.JPanel {
     }
 
     private void loadTasks() {
-        taskPanel.removeAll();
         try {
             ArrayList<TaskDto> tasks = taskController.getAllTasks();
             LocalDate today = LocalDate.now();
@@ -552,15 +532,12 @@ public class Form1 extends javax.swing.JPanel {
                     }
                 });
 
-                taskPanel.add(card);
-                taskPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+               
             }
 
-            taskPanel.revalidate();
-            taskPanel.repaint();
-
-            // --- Update weekly chart ---
-            updateWeeklyChart(completed, overdue, upcoming);
+            
+ 
+           
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error loading tasks: " + e.getMessage());

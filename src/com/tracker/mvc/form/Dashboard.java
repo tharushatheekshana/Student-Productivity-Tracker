@@ -4,12 +4,28 @@
  */
 package com.tracker.mvc.form;
 
+import com.formdev.flatlaf.FlatClientProperties;
+import com.tracker.mvc.component.Card;
 import com.tracker.mvc.controller.TaskController;
 import com.tracker.mvc.dto.TaskDto;
+import com.tracker.mvc.model.Model_Card;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import javax.swing.BoxLayout;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 /**
  *
@@ -18,6 +34,9 @@ import java.util.ArrayList;
 public class Dashboard extends javax.swing.JPanel {
 
     private TaskController taskController;
+    private javax.swing.JScrollPane scrollPane;
+    private List<String> quotes = new ArrayList<>();
+    private Random random = new Random();
 
     /**
      * Creates new form Dashboard
@@ -32,7 +51,35 @@ public class Dashboard extends javax.swing.JPanel {
             System.out.println("Error initializing TaskController: " + ex.getMessage());
         }
 
+        loadQuotesFromJsonl();
+        // Set a random quote on lblQuote
+        lblQuote.setText(getRandomQuote());
+
         loadTasks();
+
+        // disable vertical scrollbar, keep horizontal only
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        // beautify scrollbar with FlatLaf style
+        jScrollPane1.getHorizontalScrollBar().putClientProperty(
+                FlatClientProperties.STYLE,
+                "trackArc:999;"
+                + "trackInsets:3,3,3,3;"
+                + "thumbInsets:3,3,3,3;"
+                + "background:$Table.background;"
+                + "thumb:darken($Component.accentColor,10%)"
+        );
+
+        // (optional) style vertical scrollbar too, in case you enable later
+        jScrollPane1.getVerticalScrollBar().putClientProperty(
+                FlatClientProperties.STYLE,
+                "trackArc:999;"
+                + "trackInsets:3,3,3,3;"
+                + "thumbInsets:3,3,3,3;"
+                + "background:$Table.background;"
+                + "thumb:darken($Component.accentColor,10%)"
+        );
     }
 
     /**
@@ -46,123 +93,200 @@ public class Dashboard extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
         panelTodayTasks = new javax.swing.JPanel();
+        lblQuote = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+
+        setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLabel1.setFont(new java.awt.Font("Poppins", 1, 24)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(50, 50, 50));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel1.setText("Hello User ");
         jLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 6, -1, -1));
 
         jLabel2.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(50, 50, 50));
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel2.setText("Today Tasks");
         jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 120, 149, -1));
 
-        javax.swing.GroupLayout panelTodayTasksLayout = new javax.swing.GroupLayout(panelTodayTasks);
-        panelTodayTasks.setLayout(panelTodayTasksLayout);
-        panelTodayTasksLayout.setHorizontalGroup(
-            panelTodayTasksLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 676, Short.MAX_VALUE)
-        );
-        panelTodayTasksLayout.setVerticalGroup(
-            panelTodayTasksLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 186, Short.MAX_VALUE)
-        );
+        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 324, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 324, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(panelTodayTasks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(panelTodayTasks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(81, Short.MAX_VALUE))
-        );
+        panelTodayTasks.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        panelTodayTasks.setLayout(new javax.swing.BoxLayout(panelTodayTasks, javax.swing.BoxLayout.LINE_AXIS));
+        jScrollPane1.setViewportView(panelTodayTasks);
+
+        add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 164, 670, 190));
+
+        lblQuote.setFont(new java.awt.Font("Poppins", 3, 12)); // NOI18N
+        lblQuote.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        lblQuote.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        lblQuote.setBorder(javax.swing.BorderFactory.createCompoundBorder());
+        add(lblQuote, new org.netbeans.lib.awtextra.AbsoluteConstraints(226, 16, 440, 89));
+        add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 111, 670, -1));
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel lblQuote;
     private javax.swing.JPanel panelTodayTasks;
     // End of variables declaration//GEN-END:variables
 
-    public void loadTasks() {
-        panelTodayTasks.removeAll(); // Clear old cards
+//    public void loadTasks() {
+//        panelTodayTasks.removeAll();
+//
+//        LocalDate today = LocalDate.now();
+//
+//        List<Card> cards = new ArrayList<>();
+//        List<java.time.LocalDateTime> deadlines = new ArrayList<>();
+//
+//        try {
+//            ArrayList<TaskDto> allTasks = taskController.getAllTasks();
+//
+//            for (TaskDto task : allTasks) {
+//                if (task.getDeadline().equals(today)) {
+//                    Card card = new Card();
+//
+//                    String subjectHtml = "<html><p style='width:200px;'>" + task.getSubject() + "</p></html>";
+//                    String description = task.getDescription();
+//                    java.time.LocalDateTime deadlineTime = task.getDeadline().atStartOfDay().plusDays(1);
+    ////
+//                    long secondsRemaining = java.time.Duration.between(java.time.LocalDateTime.now(), deadlineTime).getSeconds();
+//                    String remainingTime = formatRemainingTime(secondsRemaining);
+//
+//                    Model_Card model = new Model_Card(
+//                            null,
+//                            subjectHtml,
+//                            remainingTime,
+//                            description
+//                    );
+//
+//                    card.setData(model);
+//                    card.setPreferredSize(new Dimension(250, 150));
+//                    card.setMaximumSize(new Dimension(250, 150));
+//
+//                    panelTodayTasks.add(card);
+//
+//                    cards.add(card);
+////                    deadlines.add(deadlineTime);
+//                }
+//            }
+//
+//            if (cards.isEmpty()) {
+//                javax.swing.JLabel noTasksLabel = new javax.swing.JLabel("No tasks today");
+//                noTasksLabel.setFont(new java.awt.Font("Poppins", 0, 16));
+//                noTasksLabel.setForeground(new java.awt.Color(120, 120, 120));
+//                panelTodayTasks.add(noTasksLabel);
+//            }
+//
+//            javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
+//                java.time.LocalDateTime now = java.time.LocalDateTime.now();
+//                for (int i = 0; i < cards.size(); i++) {
+//                    long secRemaining = java.time.Duration.between(now, deadlines.get(i)).getSeconds();
+//                    Card card = cards.get(i);
+//                    card.setValuesText(formatRemainingTime(secRemaining));
+//                    card.repaint();
+//                }
+//            });
+//
+//            timer.start();
+//
+//            panelTodayTasks.revalidate();
+//            panelTodayTasks.repaint();
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+    
+  public void loadTasks() {
+        panelTodayTasks.removeAll();
+
         LocalDate today = LocalDate.now();
-        boolean hasTasks = false;
 
         try {
             ArrayList<TaskDto> allTasks = taskController.getAllTasks();
 
             for (TaskDto task : allTasks) {
                 if (task.getDeadline().equals(today)) {
-                    hasTasks = true; // Found at least one
+                    Card card = new Card();
 
-                    com.tracker.mvc.component.Card newCard = new com.tracker.mvc.component.Card();
+                    // Subject with HTML formatting for width
+                    String subjectHtml = "<html><p style='width:200px;'>" + task.getSubject() + "</p></html>";
+                    String description = task.getDescription();
 
-                    String subjectHtml = "<html><p style='width:180px;'>" + task.getSubject() + "</p></html>";
-                    String descriptionHtml = "<html><p style='width:180px;'>" + task.getDescription() + "</p></html>";
+                    // Only subject, description, and icon (null icon for now)
+                    Model_Card model = new Model_Card(
+                            null, // icon
+                            subjectHtml, // subject
+                            description, // description
+                            null // remove remainingTime
+                    );
 
-                    java.time.LocalDateTime now = java.time.LocalDateTime.now();
-                    java.time.LocalDateTime deadlineTime = task.getDeadline().atStartOfDay().plusDays(1);
-                    long secondsRemaining = java.time.Duration.between(now, deadlineTime).getSeconds();
-                    String remainingTime = formatRemainingTime(secondsRemaining);
+                    card.setData(model);
+                    card.setPreferredSize(new Dimension(250, 150));
+                    card.setMaximumSize(new Dimension(250, 150));
 
-                    newCard.setData(new com.tracker.mvc.model.Model_Card(
-                            null, subjectHtml, descriptionHtml, remainingTime
-                    ));
-                    newCard.setPreferredSize(new Dimension(250, 150));
-                    panelTodayTasks.add(newCard);
-
-                    // Timer to update remaining time
-                    javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
-                        long secRemaining = java.time.Duration.between(java.time.LocalDateTime.now(), deadlineTime).getSeconds();
-                        newCard.setData(new com.tracker.mvc.model.Model_Card(
-                                null, subjectHtml, descriptionHtml, formatRemainingTime(secRemaining)
-                        ));
-                        newCard.repaint();
-                    });
-                    timer.start();
+                    panelTodayTasks.add(card);
                 }
             }
 
-            // If no tasks, show message
-            if (!hasTasks) {
-                javax.swing.JLabel noTaskLabel = new javax.swing.JLabel("No tasks today");
-                noTaskLabel.setFont(new java.awt.Font("Poppins", 0, 16));
-                noTaskLabel.setForeground(new java.awt.Color(120, 120, 120));
-                panelTodayTasks.add(noTaskLabel);
+            if (panelTodayTasks.getComponentCount() == 0) {
+                javax.swing.JLabel noTasksLabel = new javax.swing.JLabel("No tasks today");
+                noTasksLabel.setFont(new java.awt.Font("Poppins", 0, 16));
+                noTasksLabel.setForeground(new java.awt.Color(120, 120, 120));
+                panelTodayTasks.add(noTasksLabel);
             }
 
             panelTodayTasks.revalidate();
             panelTodayTasks.repaint();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private String formatRemainingTime(long totalSeconds) {
-        if (totalSeconds <= 0) {
-            return "Time up";
+    private void loadQuotesFromJsonl() {
+        try (InputStream inputStream = getClass().getResourceAsStream("/com/tracker/mvc/resources/quotes.jsonl")) {
+            if (inputStream == null) {
+                System.err.println("quotes.jsonl resource not found.");
+                return;
+            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                JSONObject obj = new JSONObject(line);
+                String quoteText = obj.optString("quote");
+                String author = obj.optString("author", "");
+                String fullQuote = author.isEmpty() ? quoteText : quoteText + " – " + author;
+                quotes.add(fullQuote);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        long hours = totalSeconds / 3600;
-        long minutes = (totalSeconds % 3600) / 60;
-        long seconds = totalSeconds % 60;
-        return String.format("%02d:%02d:%02d remaining", hours, minutes, seconds);
     }
+
+    private String getRandomQuote() {
+        if (quotes.isEmpty()) {
+            return "No quotes available";
+        }
+        int index = random.nextInt(quotes.size());
+        String quote = quotes.get(index).trim();
+
+        // Remove leading and trailing straight double quotes if present
+        if (quote.startsWith("\"") && quote.endsWith("\"") && quote.length() > 1) {
+            quote = quote.substring(1, quote.length() - 1).trim();
+        }
+        // Display the quote without adding extra quotes, preserving curly quotes if any
+        return "<html><i>" + quote + "</i></html>";
+    }
+
 }

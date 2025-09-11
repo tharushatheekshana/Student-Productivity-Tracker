@@ -4,12 +4,15 @@
  */
 package com.tracker.mvc.view;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import com.tracker.mvc.controller.TaskController;
 import com.tracker.mvc.form.Dashboard;
 import com.tracker.mvc.form.Form1;
 import com.tracker.mvc.form.Form2;
 import com.tracker.mvc.form.Form3;
+import com.tracker.mvc.form.Form4;
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 
 /**
  *
@@ -37,6 +40,12 @@ public class DashboardView extends javax.swing.JFrame {
         }
 
         initComponents();
+
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 //        panelTodayTasks.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
         menu.initMoving(DashboardView.this);
         this.setLocationRelativeTo(null);
@@ -52,6 +61,8 @@ public class DashboardView extends javax.swing.JFrame {
                     setForm(new Form2());
                 case 3 ->
                     setForm(new Form3());
+                case 4 ->
+                    setForm(new Form4());
                 default -> {
                 }
             }
