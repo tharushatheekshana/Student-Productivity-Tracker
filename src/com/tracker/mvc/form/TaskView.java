@@ -63,6 +63,7 @@ public class TaskView extends javax.swing.JPanel {
 
         scroll.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
+        table.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         table.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -86,8 +87,12 @@ public class TaskView extends javax.swing.JPanel {
             table.getColumnModel().getColumn(1).setMaxWidth(40);
         }
 
+        txtSearch.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+
+        lblSubject.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         lblSubject.setText("TASK");
 
+        cmdEdit.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         cmdEdit.setText("Edit");
         cmdEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -95,6 +100,7 @@ public class TaskView extends javax.swing.JPanel {
             }
         });
 
+        cmdDelete.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         cmdDelete.setText("Delete");
         cmdDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -102,6 +108,7 @@ public class TaskView extends javax.swing.JPanel {
             }
         });
 
+        cmdNew.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         cmdNew.setText("New");
         cmdNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

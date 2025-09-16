@@ -84,8 +84,10 @@ public class Report extends javax.swing.JPanel {
         chartContainer1.setPreferredSize(new java.awt.Dimension(250, 250));
         chartContainer1.setLayout(new java.awt.BorderLayout());
 
+        jComboBox1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" }));
 
+        btnExport.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         btnExport.setText("Export PDF");
 
         jLabel1.setFont(new java.awt.Font("Poppins", 1, 14)); // NOI18N
@@ -122,7 +124,7 @@ public class Report extends javax.swing.JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(0, 16, Short.MAX_VALUE)
+                .addGap(0, 13, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jLabel1))

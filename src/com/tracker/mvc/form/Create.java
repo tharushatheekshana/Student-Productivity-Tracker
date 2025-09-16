@@ -39,12 +39,15 @@ public class Create extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         txtDescription = new javax.swing.JTextArea();
 
+        lblSubject.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         lblSubject.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         lblSubject.setText("Subject");
 
+        lblDeadline.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         lblDeadline.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         lblDeadline.setText("Date");
 
+        lblDescription.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         lblDescription.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         lblDescription.setText("Description");
 

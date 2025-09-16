@@ -6,7 +6,6 @@ package com.tracker.mvc.form;
 
 import com.tracker.mvc.controller.TimetableController;
 import com.tracker.mvc.dto.TimetableDto;
-import com.tracker.mvc.view.TimetableView;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ public class Timetable extends javax.swing.JPanel {
         try {
             this.timetableController = new TimetableController();
         } catch (Exception ex) {
-            System.getLogger(TimetableView.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            System.getLogger(Timetable.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
         }
         initComponents();
         loadTimetable();
@@ -69,16 +68,22 @@ public class Timetable extends javax.swing.JPanel {
         jLabel2.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel2.setText("Custom Study Schedule Generator");
 
+        jLabel1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         jLabel1.setText("Subject");
 
+        jComboBox1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "High", "Medium", "Low" }));
 
+        jLabel5.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         jLabel5.setText("Priority");
 
+        jLabel3.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         jLabel3.setText("Start Time");
 
+        jLabel4.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         jLabel4.setText("End Time");
 
+        tblTimetable.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         tblTimetable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
@@ -92,6 +97,7 @@ public class Timetable extends javax.swing.JPanel {
         ));
         jScrollPane1.setViewportView(tblTimetable);
 
+        btnGenTimetable.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         btnGenTimetable.setText("Generate Timetable");
         btnGenTimetable.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -99,6 +105,7 @@ public class Timetable extends javax.swing.JPanel {
             }
         });
 
+        btnAdd.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         btnAdd.setText("Add");
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -106,6 +113,7 @@ public class Timetable extends javax.swing.JPanel {
             }
         });
 
+        btnRemove.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         btnRemove.setText("Remove");
         btnRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -165,13 +173,14 @@ public class Timetable extends javax.swing.JPanel {
                         .addComponent(txtAddSubject, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnAdd)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnGenTimetable)
-                .addContainerGap())
+                .addContainerGap(26, Short.MAX_VALUE))
         );
 
+        tblGenTimetable.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
         tblGenTimetable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
@@ -209,9 +218,9 @@ public class Timetable extends javax.swing.JPanel {
                 .addComponent(jLabel2)
                 .addGap(11, 11, 11)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 365, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(37, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 365, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
