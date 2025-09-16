@@ -37,7 +37,17 @@ public class CheckBoxTableHeaderRenderer extends JCheckBox implements TableCellR
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+//        setText("SELECT"); 
+        setSelected(getHeaderSelectionState());
         return this;
+    }
+
+    private boolean getHeaderSelectionState() {
+        Object state = getClientProperty(FlatClientProperties.SELECTED_STATE);
+        if (state == FlatClientProperties.SELECTED_STATE_INDETERMINATE) {
+            return false; // Indeterminate is visually shown by FlatLaf
+        }
+        return isSelected();
     }
 
     private void init() {

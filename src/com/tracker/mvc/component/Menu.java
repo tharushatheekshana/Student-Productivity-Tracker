@@ -28,7 +28,7 @@ public class Menu extends javax.swing.JPanel {
         this.event = event;
         listMenu1.addEventMenuSelected(event);
     }
-    
+
     /**
      * Creates new form Menu
      */
@@ -41,10 +41,10 @@ public class Menu extends javax.swing.JPanel {
 
     private void init() {
         listMenu1.addItem(new Model_Menu("1", "Dashboard", Model_Menu.MenuType.MENU));
-        listMenu1.addItem(new Model_Menu("2", "Tasks & Calendar", Model_Menu.MenuType.MENU));
+        listMenu1.addItem(new Model_Menu("2", "Tasks", Model_Menu.MenuType.MENU));
+        listMenu1.addItem(new Model_Menu("5", "Calender", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("3", "Study Schedule", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("4", "Progress & Reports", Model_Menu.MenuType.MENU));
-        listMenu1.addItem(new Model_Menu("5", "Settings", Model_Menu.MenuType.MENU));
         listMenu1.addItem(new Model_Menu("", " ", Model_Menu.MenuType.EMPTY));
 
 //        listMenu1.addItem(new Model_Menu("", "My Data", Model_Menu.MenuType.TITLE));
@@ -77,7 +77,7 @@ public class Menu extends javax.swing.JPanel {
         jLabel1.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/tracker/mvc/icon/logo.png"))); // NOI18N
-        jLabel1.setText("Application");
+        jLabel1.setText("Taskly");
 
         javax.swing.GroupLayout panelMovingLayout = new javax.swing.GroupLayout(panelMoving);
         panelMoving.setLayout(panelMovingLayout);

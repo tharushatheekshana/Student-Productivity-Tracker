@@ -44,7 +44,7 @@ public class Card extends javax.swing.JPanel {
         if (icon != null) {
             lbIcon.setIcon(icon);
         } else {
-            lbIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/tracker/mvc/icon/stock.png")));
+            lbIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/tracker/mvc/icon/schedule.png")));
         }
 
         lbTitle.setText(data.getTitle() != null ? data.getTitle() : "");
@@ -65,7 +65,7 @@ public class Card extends javax.swing.JPanel {
         lbValues = new javax.swing.JLabel();
         lbDescription = new javax.swing.JLabel();
 
-        lbIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/tracker/mvc/icon/stock.png"))); // NOI18N
+        lbIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/tracker/mvc/icon/schedule.png"))); // NOI18N
 
         lbTitle.setFont(new java.awt.Font("Poppins", 1, 24)); // NOI18N
         lbTitle.setForeground(new java.awt.Color(255, 255, 255));
@@ -144,6 +144,11 @@ public class Card extends javax.swing.JPanel {
 
     public void setValuesText(String text) {
         lbValues.setText(text);
+    }
+
+    public void updateCountdown(String text, Color color) {
+        lbValues.setText(text);
+        lbValues.setForeground(color);
     }
 
 }

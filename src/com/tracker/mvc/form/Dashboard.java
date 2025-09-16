@@ -5,26 +5,24 @@
 package com.tracker.mvc.form;
 
 import com.formdev.flatlaf.FlatClientProperties;
+import com.formdev.flatlaf.FlatLaf;
 import com.tracker.mvc.component.Card;
 import com.tracker.mvc.controller.TaskController;
 import com.tracker.mvc.dto.TaskDto;
 import com.tracker.mvc.model.Model_Card;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import javax.swing.BoxLayout;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
-import org.json.JSONArray;
+import javax.swing.Timer;
 import org.json.JSONObject;
 
 /**
@@ -37,12 +35,15 @@ public class Dashboard extends javax.swing.JPanel {
     private javax.swing.JScrollPane scrollPane;
     private List<String> quotes = new ArrayList<>();
     private Random random = new Random();
+    private Timer countdownTimer;
+    private final List<Timer> updateTimers = new ArrayList<>();
 
     /**
      * Creates new form Dashboard
      */
     public Dashboard() {
         initComponents();
+
         panelTodayTasks.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
 
         try {
@@ -80,6 +81,10 @@ public class Dashboard extends javax.swing.JPanel {
                 + "background:$Table.background;"
                 + "thumb:darken($Component.accentColor,10%)"
         );
+
+        FlatLaf.registerCustomDefaultsSource("com.tracker.mvc.themes");
+        jLabel1.setText(getTimeBasedGreeting());
+
     }
 
     /**
@@ -92,166 +97,213 @@ public class Dashboard extends javax.swing.JPanel {
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
+        lblQuote = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         panelTodayTasks = new javax.swing.JPanel();
-        lblQuote = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
-
-        setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+        jLabel3 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        panelTodayTasks1 = new javax.swing.JPanel();
 
         jLabel1.setFont(new java.awt.Font("Poppins", 1, 24)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(50, 50, 50));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel1.setText("Hello User ");
         jLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 6, -1, -1));
+
+        lblQuote.setFont(new java.awt.Font("Poppins", 3, 12)); // NOI18N
+        lblQuote.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        lblQuote.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        lblQuote.setBorder(javax.swing.BorderFactory.createCompoundBorder());
 
         jLabel2.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(50, 50, 50));
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel2.setText("Today Tasks");
         jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 120, 149, -1));
 
+        jScrollPane1.setBorder(null);
         jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
         panelTodayTasks.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        panelTodayTasks.setLayout(new javax.swing.BoxLayout(panelTodayTasks, javax.swing.BoxLayout.LINE_AXIS));
+        panelTodayTasks.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 15, 15));
         jScrollPane1.setViewportView(panelTodayTasks);
 
-        add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 164, 670, 190));
+        jLabel3.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(50, 50, 50));
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel3.setText("Upcoming Tasks");
+        jLabel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
-        lblQuote.setFont(new java.awt.Font("Poppins", 3, 12)); // NOI18N
-        lblQuote.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        lblQuote.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        lblQuote.setBorder(javax.swing.BorderFactory.createCompoundBorder());
-        add(lblQuote, new org.netbeans.lib.awtextra.AbsoluteConstraints(226, 16, 440, 89));
-        add(jSeparator1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 111, 670, -1));
+        jScrollPane2.setBorder(null);
+        jScrollPane2.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+
+        panelTodayTasks1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        panelTodayTasks1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 15, 15));
+        jScrollPane2.setViewportView(panelTodayTasks1);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 648, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 642, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jScrollPane4.setViewportView(jPanel1);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lblQuote, javax.swing.GroupLayout.PREFERRED_SIZE, 440, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(16, 16, 16))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jSeparator1)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblQuote, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                .addContainerGap())
+        );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lblQuote;
     private javax.swing.JPanel panelTodayTasks;
+    private javax.swing.JPanel panelTodayTasks1;
     // End of variables declaration//GEN-END:variables
 
-//    public void loadTasks() {
-//        panelTodayTasks.removeAll();
-//
-//        LocalDate today = LocalDate.now();
-//
-//        List<Card> cards = new ArrayList<>();
-//        List<java.time.LocalDateTime> deadlines = new ArrayList<>();
-//
-//        try {
-//            ArrayList<TaskDto> allTasks = taskController.getAllTasks();
-//
-//            for (TaskDto task : allTasks) {
-//                if (task.getDeadline().equals(today)) {
-//                    Card card = new Card();
-//
-//                    String subjectHtml = "<html><p style='width:200px;'>" + task.getSubject() + "</p></html>";
-//                    String description = task.getDescription();
-//                    java.time.LocalDateTime deadlineTime = task.getDeadline().atStartOfDay().plusDays(1);
-    ////
-//                    long secondsRemaining = java.time.Duration.between(java.time.LocalDateTime.now(), deadlineTime).getSeconds();
-//                    String remainingTime = formatRemainingTime(secondsRemaining);
-//
-//                    Model_Card model = new Model_Card(
-//                            null,
-//                            subjectHtml,
-//                            remainingTime,
-//                            description
-//                    );
-//
-//                    card.setData(model);
-//                    card.setPreferredSize(new Dimension(250, 150));
-//                    card.setMaximumSize(new Dimension(250, 150));
-//
-//                    panelTodayTasks.add(card);
-//
-//                    cards.add(card);
-////                    deadlines.add(deadlineTime);
-//                }
-//            }
-//
-//            if (cards.isEmpty()) {
-//                javax.swing.JLabel noTasksLabel = new javax.swing.JLabel("No tasks today");
-//                noTasksLabel.setFont(new java.awt.Font("Poppins", 0, 16));
-//                noTasksLabel.setForeground(new java.awt.Color(120, 120, 120));
-//                panelTodayTasks.add(noTasksLabel);
-//            }
-//
-//            javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
-//                java.time.LocalDateTime now = java.time.LocalDateTime.now();
-//                for (int i = 0; i < cards.size(); i++) {
-//                    long secRemaining = java.time.Duration.between(now, deadlines.get(i)).getSeconds();
-//                    Card card = cards.get(i);
-//                    card.setValuesText(formatRemainingTime(secRemaining));
-//                    card.repaint();
-//                }
-//            });
-//
-//            timer.start();
-//
-//            panelTodayTasks.revalidate();
-//            panelTodayTasks.repaint();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-    
-  public void loadTasks() {
+    public void loadTasks() {
         panelTodayTasks.removeAll();
+        panelTodayTasks1.removeAll();
 
         LocalDate today = LocalDate.now();
-
         try {
             ArrayList<TaskDto> allTasks = taskController.getAllTasks();
+            boolean hasTodayTasks = false;
+            boolean hasUpcomingTasks = false;
 
             for (TaskDto task : allTasks) {
                 if (task.getDeadline().equals(today)) {
-                    Card card = new Card();
-
-                    // Subject with HTML formatting for width
-                    String subjectHtml = "<html><p style='width:200px;'>" + task.getSubject() + "</p></html>";
-                    String description = task.getDescription();
-
-                    // Only subject, description, and icon (null icon for now)
-                    Model_Card model = new Model_Card(
-                            null, // icon
-                            subjectHtml, // subject
-                            description, // description
-                            null // remove remainingTime
-                    );
-
-                    card.setData(model);
-                    card.setPreferredSize(new Dimension(250, 150));
-                    card.setMaximumSize(new Dimension(250, 150));
-
-                    panelTodayTasks.add(card);
+                    hasTodayTasks = true;
+                    panelTodayTasks.add(createCardForTask(task));
+                } else if (task.getDeadline().isAfter(today)) {
+                    hasUpcomingTasks = true;
+                    panelTodayTasks1.add(createCardForTask(task));
                 }
             }
 
-            if (panelTodayTasks.getComponentCount() == 0) {
-                javax.swing.JLabel noTasksLabel = new javax.swing.JLabel("No tasks today");
-                noTasksLabel.setFont(new java.awt.Font("Poppins", 0, 16));
-                noTasksLabel.setForeground(new java.awt.Color(120, 120, 120));
-                panelTodayTasks.add(noTasksLabel);
+            if (!hasTodayTasks) {
+                addNoTasksLabel(panelTodayTasks, "No tasks today");
+            }
+            if (!hasUpcomingTasks) {
+                addNoTasksLabel(panelTodayTasks1, "No upcoming tasks");
             }
 
             panelTodayTasks.revalidate();
             panelTodayTasks.repaint();
-
+            panelTodayTasks1.revalidate();
+            panelTodayTasks1.repaint();
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private Card createCardForTask(TaskDto task) {
+        Card card = new Card();
+        String subjectHtml = "<html><p style='width:200px;'>" + task.getSubject() + "</p></html>";
+        String description = task.getDescription();
+
+        // Calculate initial countdown string
+        String countdownText = getCountdownText(task.getDeadline());
+
+        // Create Model_Card with countdown
+        Model_Card model = new Model_Card(null, subjectHtml, countdownText, description);
+        card.setData(model);
+        card.setPreferredSize(new Dimension(250, 150));
+
+        // Setup a Timer to update countdown every second
+        Timer timer = new Timer(1000, e -> {
+            String newCountdown = getCountdownText(task.getDeadline());
+            model.setValues(newCountdown); // update countdown in the model
+            card.setData(model);
+            card.repaint();
+        });
+        timer.start();
+        updateTimers.add(timer); // keep reference so you can stop them later if needed
+
+        return card;
+    }
+
+    private String getCountdownText(LocalDate deadline) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime endOfDay = deadline.atTime(23, 59, 59); // countdown to end of deadline day
+
+        long secondsLeft = now.until(endOfDay, ChronoUnit.SECONDS);
+        if (secondsLeft <= 0) {
+            return "Deadline passed";
+        }
+
+        long days = secondsLeft / (24 * 3600);
+        long hours = (secondsLeft % (24 * 3600)) / 3600;
+        long minutes = (secondsLeft % 3600) / 60;
+        long seconds = secondsLeft % 60;
+
+        return String.format("%dd %02dh %02dm %02ds", days, hours, minutes, seconds);
+    }
+
+    private void addNoTasksLabel(javax.swing.JPanel panel, String text) {
+        javax.swing.JLabel label = new javax.swing.JLabel(text);
+        label.setFont(new java.awt.Font("Poppins", 0, 16));
+        label.setForeground(new Color(120, 120, 120));
+        panel.add(label);
     }
 
     private void loadQuotesFromJsonl() {
@@ -280,13 +332,23 @@ public class Dashboard extends javax.swing.JPanel {
         }
         int index = random.nextInt(quotes.size());
         String quote = quotes.get(index).trim();
-
-        // Remove leading and trailing straight double quotes if present
         if (quote.startsWith("\"") && quote.endsWith("\"") && quote.length() > 1) {
             quote = quote.substring(1, quote.length() - 1).trim();
         }
-        // Display the quote without adding extra quotes, preserving curly quotes if any
         return "<html><i>" + quote + "</i></html>";
+    }
+
+    private String getTimeBasedGreeting() {
+        int hour = LocalDateTime.now().getHour();
+        if (hour >= 0 && hour < 12) {  // 12 AM to before 12 PM
+            return "Good morning";
+        } else if (hour >= 12 && hour < 17) {
+            return "Good afternoon";
+        } else if (hour >= 17 && hour < 21) {
+            return "Good evening";
+        } else {
+            return "Hello";
+        }
     }
 
 }

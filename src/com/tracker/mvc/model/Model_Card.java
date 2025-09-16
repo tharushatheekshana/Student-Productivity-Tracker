@@ -35,6 +35,7 @@ public class Model_Card {
     public void setDescription(String description) {
         this.description = description;
     }
+    
 
     public Model_Card(Icon icon, String title, String values, String description) {
         this.icon = icon;

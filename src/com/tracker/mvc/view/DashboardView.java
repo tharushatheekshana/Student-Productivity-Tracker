@@ -7,10 +7,10 @@ package com.tracker.mvc.view;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.tracker.mvc.controller.TaskController;
 import com.tracker.mvc.form.Dashboard;
-import com.tracker.mvc.form.Form1;
-import com.tracker.mvc.form.Form2;
-import com.tracker.mvc.form.Form3;
-import com.tracker.mvc.form.Form4;
+import com.tracker.mvc.form.Calender;
+import com.tracker.mvc.form.Timetable;
+import com.tracker.mvc.form.Report;
+import com.tracker.mvc.form.TaskView;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
 
@@ -24,9 +24,10 @@ public class DashboardView extends javax.swing.JFrame {
 
     private TaskController taskController;
     private Dashboard dashboardForm = new Dashboard();
-    private Form1 form1 = new Form1();
-    private Form2 form2 = new Form2();
-    private Form3 form3 = new Form3();
+    private TaskView form1 = new TaskView();
+    private Timetable form2 = new Timetable();
+    private Report form3 = new Report();
+    private Calender form4 = new Calender();
 
     /**
      * Creates new form DashboardView
@@ -56,13 +57,13 @@ public class DashboardView extends javax.swing.JFrame {
                 case 0 ->
                     setForm(new Dashboard());
                 case 1 ->
-                    setForm(new Form1());
+                    setForm(new TaskView());
                 case 2 ->
-                    setForm(new Form2());
+                    setForm(new Calender());
                 case 3 ->
-                    setForm(new Form3());
+                    setForm(new Timetable());
                 case 4 ->
-                    setForm(new Form4());
+                    setForm(new Report());
                 default -> {
                 }
             }
