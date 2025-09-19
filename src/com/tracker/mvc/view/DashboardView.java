@@ -22,7 +22,6 @@ public class DashboardView extends javax.swing.JFrame {
 
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DashboardView.class.getName());
 
-    private TaskController taskController;
     private Dashboard dashboardForm = new Dashboard();
     private TaskView form1 = new TaskView();
     private Timetable form2 = new Timetable();
@@ -34,7 +33,7 @@ public class DashboardView extends javax.swing.JFrame {
      */
     public DashboardView() {
         try {
-            this.taskController = new TaskController();
+            new TaskController();
         } catch (Exception ex) {
             System.getLogger(DashboardView.class.getName())
                     .log(System.Logger.Level.ERROR, (String) null, ex);
@@ -47,11 +46,9 @@ public class DashboardView extends javax.swing.JFrame {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-//        panelTodayTasks.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
         menu.initMoving(DashboardView.this);
         this.setLocationRelativeTo(null);
 
-//        loadTasks();
         menu.addEventMenuSelected((int index) -> {
             switch (index) {
                 case 0 ->
@@ -94,6 +91,7 @@ public class DashboardView extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
+        setResizable(false);
 
         panelBorder1.setAlignmentX(0.0F);
         panelBorder1.setAlignmentY(0.0F);
@@ -170,230 +168,4 @@ public class DashboardView extends javax.swing.JFrame {
     private com.tracker.mvc.swing.PanelBorder panelBorder1;
     // End of variables declaration//GEN-END:variables
 
-//    private void saveTask() {
-//        TaskDto dto = new TaskDto();
-//
-//        java.util.Date selectedDate = jDateChooser.getDate();
-//        if (selectedDate == null) {
-//            JOptionPane.showMessageDialog(this, "Please select a deadline");
-//            return;
-//        }
-//        LocalDate deadline = selectedDate.toInstant()
-//                .atZone(java.time.ZoneId.systemDefault())
-//                .toLocalDate();
-//
-//        dto.setSubject(txtSubject.getText());
-//        dto.setDescription(txtDescription.getText());
-//        dto.setDeadline(deadline);
-//
-//        try {
-//            String result = taskController.saveTask(dto);
-//            JOptionPane.showMessageDialog(this, result);
-//            loadTasks();
-//            clear();
-//        } catch (Exception ex) {
-//            JOptionPane.showMessageDialog(this, "Error saving task: " + ex.getMessage());
-//            ex.printStackTrace();
-//        }
-//    }
-//    private void loadTasks() {
-//        panelTodayTasks.removeAll(); // Clear old cards
-//        LocalDate today = LocalDate.now();
-//
-//        try {
-//            ArrayList<TaskDto> allTasks = taskController.getAllTasks();
-//
-//            for (TaskDto task : allTasks) {
-//                // Only add card for today's tasks
-//                if (task.getDeadline().equals(today)) {
-//                    com.tracker.mvc.component.Card newCard = new com.tracker.mvc.component.Card();
-//
-//                    // Wrap subject and description with HTML for text wrapping
-//                    final String subjectHtml = "<html><p style='width:180px;'>" + task.getSubject() + "</p></html>";
-//                    final String descriptionHtml = "<html><p style='width:180px;'>" + task.getDescription() + "</p></html>";
-//
-//                    // Initial remaining time
-//                    java.time.LocalDateTime now = java.time.LocalDateTime.now();
-//                    java.time.LocalDateTime deadlineTime = task.getDeadline().atStartOfDay().plusDays(1);
-//                    long secondsRemaining = java.time.Duration.between(now, deadlineTime).getSeconds();
-//                    String remainingTime = formatRemainingTime(secondsRemaining);
-//
-//                    // Set initial card data
-//                    newCard.setData(new com.tracker.mvc.model.Model_Card(
-//                            null, subjectHtml, descriptionHtml, remainingTime
-//                    ));
-//
-//                    newCard.setPreferredSize(new Dimension(250, 150));
-//                    panelTodayTasks.add(newCard);
-//
-//                    // Timer to update only remaining time
-//                    javax.swing.Timer timer = new javax.swing.Timer(1000, e -> {
-//                        long secRemaining = java.time.Duration.between(java.time.LocalDateTime.now(), deadlineTime).getSeconds();
-//                        String updatedTime = formatRemainingTime(secRemaining);
-//
-//                        newCard.setData(new com.tracker.mvc.model.Model_Card(
-//                                null, subjectHtml, descriptionHtml, updatedTime
-//                        ));
-//                        newCard.repaint();
-//                    });
-//                    timer.start();
-//                }
-//            }
-//
-//            panelTodayTasks.revalidate();
-//            panelTodayTasks.repaint();
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            JOptionPane.showMessageDialog(this, "Error loading tasks: " + e.getMessage());
-//        }
-//    }
-//
-//    private String formatRemainingTime(long totalSeconds) {
-//        if (totalSeconds <= 0) {
-//            return "Time up";
-//        }
-//
-//        long hours = totalSeconds / 3600;
-//        long minutes = (totalSeconds % 3600) / 60;
-//        long seconds = totalSeconds % 60;
-//
-//        return String.format("%02d:%02d:%02d remaining", hours, minutes, seconds);
-//    }
-//    public void clear() {
-//        txtSubject.setText("");
-//        txtDescription.setText("");
-//        jDateChooser.setDate(null);
-//
-//    }
-//    private void searchTask() {
-//        int selectedRow = tblTask.getSelectedRow();
-//        if (selectedRow == -1) {
-//            JOptionPane.showMessageDialog(this, "Please select a task");
-//            return;
-//        }
-//
-//        String id = tblTask.getValueAt(selectedRow, 0).toString();
-//        try {
-//            TaskDto dto = taskController.searchTask(id);
-//            if (dto != null) {
-//                txtSubject.setText(dto.getSubject());
-//                txtDescription.setText(dto.getDescription());
-//                jDateChooser.setDate(java.sql.Date.valueOf(dto.getDeadline()));
-//            } else {
-//                JOptionPane.showMessageDialog(this, "Task Not Found");
-//            }
-//        } catch (Exception ex) {
-//            System.getLogger(DashboardView.class.getName())
-//                    .log(System.Logger.Level.ERROR, (String) null, ex);
-//        }
-//    }
-//
-//    private void UpdateTask() {
-//        int selectedRow = tblTask.getSelectedRow();
-//        if (selectedRow == -1) {
-//            JOptionPane.showMessageDialog(this, "Please select a task to update");
-//            return;
-//        }
-//
-//        String id = tblTask.getValueAt(selectedRow, 0).toString();
-//        TaskDto dto = new TaskDto();
-//        dto.setTaskId(id);
-//        dto.setSubject(txtSubject.getText());
-//        dto.setDescription(txtDescription.getText());
-//
-//        java.util.Date selectedDate = jDateChooser.getDate();
-//        if (selectedDate == null) {
-//            JOptionPane.showMessageDialog(this, "Please select a deadline");
-//            return;
-//        }
-//        LocalDate deadline = selectedDate.toInstant()
-//                .atZone(java.time.ZoneId.systemDefault())
-//                .toLocalDate();
-//        dto.setDeadline(deadline);
-//
-//        try {
-//            String result = taskController.updateTask(dto);
-//            JOptionPane.showMessageDialog(this, result);
-//            loadTasks();
-//            clear();
-//        } catch (Exception e) {
-//            JOptionPane.showMessageDialog(this, "Error updating task: " + e.getMessage());
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    private void DeleteTask() {
-//        int selectedRow = tblTask.getSelectedRow();
-//        if (selectedRow == -1) {
-//            JOptionPane.showMessageDialog(this, "Please select a task to delete");
-//            return;
-//        }
-//
-//        String id = tblTask.getValueAt(selectedRow, 0).toString();
-//
-//        int confirm = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this task?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
-//        if (confirm != JOptionPane.YES_OPTION) {
-//            return;
-//        }
-//
-//        try {
-//            String result = taskController.deleteTask(id);
-//            JOptionPane.showMessageDialog(this, result);
-//            loadTasks();
-//            clear();
-//        } catch (Exception e) {
-//            JOptionPane.showMessageDialog(this, "Error deleting task: " + e.getMessage());
-//            e.printStackTrace();
-//        }
-//    }
-//    private void colorCodeCalendar() {
-//        try {
-//            ArrayList<TaskDto> tasks = taskController.getAllTasks();
-//            JDayChooser dayChooser = jCalendar1.getDayChooser();
-//            Component[] dayButtons = dayChooser.getDayPanel().getComponents();
-//
-//            // Reset all buttons
-//            for (Component c : dayButtons) {
-//                if (c instanceof JButton button) {
-//                    button.setBackground(Color.WHITE);
-//                    button.setToolTipText(null);
-//                }
-//            }
-//            
-//            LocalDate today = LocalDate.now();
-//            int currentMonth = jCalendar1.getMonthChooser().getMonth() + 1;
-//            
-//            for (TaskDto task : tasks) {
-//                LocalDate deadline = task.getDeadline();
-//                if (deadline.getMonthValue() == currentMonth
-//                        && deadline.getYear() == jCalendar1.getYearChooser().getYear()) {
-//                    int dayOfMonth = deadline.getDayOfMonth();
-//                    
-//                    for (Component c : dayButtons) {
-//                        if (c instanceof JButton button) {
-//                            try {
-//                                int buttonDay = Integer.parseInt(button.getText());
-//                                if (buttonDay == dayOfMonth) {
-//                                    if (task.isCompleted()) {
-//                                        button.setBackground(Color.GREEN);
-//                                    } else if (deadline.isBefore(today)) {
-//                                        button.setBackground(Color.RED);
-//                                    } else if (deadline.equals(today)) {
-//                                        button.setBackground(Color.ORANGE);
-//                                    } else {
-//                                        button.setBackground(Color.YELLOW);
-//                                    }
-//                                    button.setToolTipText(task.getSubject());
-//                                }
-//                            } catch (NumberFormatException ignored) {
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 }
