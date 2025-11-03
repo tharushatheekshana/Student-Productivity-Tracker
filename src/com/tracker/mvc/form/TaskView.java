@@ -12,9 +12,11 @@ import com.tracker.mvc.swing.FadeLabel;
 import com.tracker.mvc.table.CheckBoxTableHeaderRenderer;
 import com.tracker.mvc.table.TableHeaderAlignment;
 import java.util.ArrayList;
+import javax.swing.RowFilter;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import raven.popup.DefaultOption;
 import raven.popup.GlassPanePopup;
 import raven.popup.component.SimplePopupBorder;
@@ -26,6 +28,8 @@ import raven.popup.component.SimplePopupBorder;
 public class TaskView extends javax.swing.JPanel {
 
     private TaskController taskController;
+    private TableRowSorter<DefaultTableModel> rowSorter;
+
 
     /**
      * Creates new form Dashboard
@@ -40,6 +44,7 @@ public class TaskView extends javax.swing.JPanel {
 
         initComponents();
         initCustomStyles();
+        addSearchListener();
     }
 
     /**
@@ -135,7 +140,7 @@ public class TaskView extends javax.swing.JPanel {
                             .addComponent(cmdDelete))
                         .addComponent(scroll, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
                         .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.LEADING)))
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         panelLayout.setVerticalGroup(
             panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -150,8 +155,8 @@ public class TaskView extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 345, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(scroll, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(50, 50, 50))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -491,11 +496,19 @@ public class TaskView extends javax.swing.JPanel {
                 });
             }
             table.setModel(model);
+
+            // Setup RowSorter for filtering
+            rowSorter = new TableRowSorter<>(model);
+            table.setRowSorter(rowSorter);
+
+            // Setup column widths and header renderers as you have done
             table.getColumnModel().getColumn(0).setMinWidth(0);
             table.getColumnModel().getColumn(0).setMaxWidth(0);
             table.getColumnModel().getColumn(1).setHeaderRenderer(new CheckBoxTableHeaderRenderer(table, 1));
             table.getTableHeader().setDefaultRenderer(new TableHeaderAlignment(table));
+
             addCompleteButtonListener();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -556,4 +569,33 @@ public class TaskView extends javax.swing.JPanel {
             }
         });
     }
+
+    private void addSearchListener() {
+        txtSearch.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private void applyFilter() {
+                String text = txtSearch.getText();
+                if (text.trim().length() == 0) {
+                    rowSorter.setRowFilter(null);
+                } else {
+                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text, 3, 4, 5));
+                }
+            }
+
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                applyFilter();
+            }
+
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                applyFilter();
+            }
+
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                applyFilter();
+            }
+        });
+    }
+
 }

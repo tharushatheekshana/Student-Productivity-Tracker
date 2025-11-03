@@ -53,7 +53,7 @@ public class Welcome extends javax.swing.JFrame {
 
         jLabel1.setFont(new java.awt.Font("Poppins", 1, 24)); // NOI18N
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Welcome to Task Tracker");
+        jLabel1.setText("Welcome to Study Boost");
 
         jLabel2.setFont(new java.awt.Font("Poppins", 0, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(102, 102, 102));
@@ -62,6 +62,7 @@ public class Welcome extends javax.swing.JFrame {
 
         jLabel3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/tracker/mvc/icon/Welcome.png"))); // NOI18N
 
+        progressBar.setFont(new java.awt.Font("Poppins", 0, 10)); // NOI18N
         progressBar.setForeground(new java.awt.Color(0, 153, 204));
         progressBar.setStringPainted(true);
 
@@ -96,7 +97,7 @@ public class Welcome extends javax.swing.JFrame {
                 .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(42, 42, 42)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(48, Short.MAX_VALUE))
+                .addContainerGap(46, Short.MAX_VALUE))
         );
 
         pack();

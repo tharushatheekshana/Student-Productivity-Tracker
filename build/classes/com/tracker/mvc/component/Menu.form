@@ -76,7 +76,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/com/tracker/mvc/icon/logo.png"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Taskly"/>
+            <Property name="text" type="java.lang.String" value="Study Boost"/>
           </Properties>
         </Component>
       </SubComponents>
