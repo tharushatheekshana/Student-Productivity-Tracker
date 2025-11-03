@@ -22,6 +22,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import javax.swing.Timer;
 import org.json.JSONObject;
 
@@ -195,12 +196,12 @@ public class Dashboard extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblQuote, javax.swing.GroupLayout.PREFERRED_SIZE, 89, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(jLabel1)
+                    .addComponent(lblQuote, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -330,12 +331,26 @@ public class Dashboard extends javax.swing.JPanel {
         if (quotes.isEmpty()) {
             return "No quotes available";
         }
-        int index = random.nextInt(quotes.size());
-        String quote = quotes.get(index).trim();
-        if (quote.startsWith("\"") && quote.endsWith("\"") && quote.length() > 1) {
-            quote = quote.substring(1, quote.length() - 1).trim();
+
+        // Filter quotes that are 60 chars or less including double quotes if present
+        List<String> shortQuotes = quotes.stream()
+                .filter(q -> q.length() <= 60)
+                .collect(Collectors.toList());
+
+        if (shortQuotes.isEmpty()) {
+            return "No suitable quotes available";
         }
-        return "<html><i>" + quote + "</i></html>";
+
+        int index = new Random().nextInt(shortQuotes.size());
+        String selectedQuote = shortQuotes.get(index);
+
+        // Optionally ensure the quote is wrapped with double quotes
+        if (!(selectedQuote.startsWith("\"") && selectedQuote.endsWith("\""))) {
+            selectedQuote = "\"" + selectedQuote + "\"";
+        }
+
+        // Use Georgia font, italic style, display as HTML
+        return "<html><span style='font-family:Georgia, serif; font-style: italic;'>" + selectedQuote + "</span></html>";
     }
 
     private String getTimeBasedGreeting() {

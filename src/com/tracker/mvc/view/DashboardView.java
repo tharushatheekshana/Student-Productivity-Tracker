@@ -91,7 +91,6 @@ public class DashboardView extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
-        setResizable(false);
 
         panelBorder1.setAlignmentX(0.0F);
         panelBorder1.setAlignmentY(0.0F);
