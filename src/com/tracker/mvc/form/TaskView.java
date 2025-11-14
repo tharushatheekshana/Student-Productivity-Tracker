@@ -11,8 +11,13 @@ import com.tracker.mvc.dto.TaskDto;
 import com.tracker.mvc.swing.FadeLabel;
 import com.tracker.mvc.table.CheckBoxTableHeaderRenderer;
 import com.tracker.mvc.table.TableHeaderAlignment;
+import com.tracker.mvc.view.FXPopupHelper;
+import java.awt.FlowLayout;
 import java.util.ArrayList;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.RowFilter;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
@@ -29,7 +34,6 @@ public class TaskView extends javax.swing.JPanel {
 
     private TaskController taskController;
     private TableRowSorter<DefaultTableModel> rowSorter;
-
 
     /**
      * Creates new form Dashboard
@@ -539,13 +543,27 @@ public class TaskView extends javax.swing.JPanel {
                             task.setCompleted(true);
                             taskController.updateTask(task);
 
-                            // --- GlassPanePopup Feedback ---
-                            FadeLabel feedback = new FadeLabel("Well done!");
-                            feedback.setOpaque(false);
-                            feedback.setFont(new java.awt.Font("Poppins", 1, 28));
-                            feedback.setForeground(new java.awt.Color(0, 150, 0));
-                            feedback.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-                            feedback.setBounds((getWidth() - 300) / 2, 50, 300, 50); // centered
+                            // --- GlassPanePopup Feedback with thumbs-up emoji ---
+                            JPanel feedbackPanel = new JPanel();
+                            feedbackPanel.setOpaque(false);
+                            feedbackPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0));
+
+                            JLabel iconLabel = new JLabel("\uD83D\uDC4D"); // Thumbs-up emoji
+                            iconLabel.setFont(new java.awt.Font("Segoe UI Emoji", java.awt.Font.PLAIN, 32)); // Consider 28 or 32
+                            iconLabel.setForeground(new java.awt.Color(0, 150, 0));
+                            iconLabel.setOpaque(false);
+                            iconLabel.setVerticalAlignment(SwingConstants.CENTER); // Center vertically
+                            iconLabel.setPreferredSize(new java.awt.Dimension(50, 50)); // Give enough space for the emoji
+
+                            JLabel textLabel = new JLabel("Well done!");
+                            textLabel.setOpaque(false);
+                            textLabel.setFont(new java.awt.Font("Poppins", 1, 28));
+                            textLabel.setForeground(new java.awt.Color(0, 150, 0));
+
+                            feedbackPanel.add(iconLabel);
+                            feedbackPanel.add(textLabel);
+
+                            feedbackPanel.setBounds((getWidth() - 300) / 2, 50, 300, 50); // centered
 
                             DefaultOption option = new DefaultOption() {
                                 @Override
@@ -554,10 +572,10 @@ public class TaskView extends javax.swing.JPanel {
                                 }
                             };
 
-                            GlassPanePopup.showPopup(new SimplePopupBorder(feedback, "", new String[]{}, null), option);
+                            GlassPanePopup.showPopup(new SimplePopupBorder(feedbackPanel, "", new String[]{}, null), option);
 
                             // Auto fade out after 1.5 seconds
-                            new javax.swing.Timer(1500, e -> GlassPanePopup.closePopup(feedback)).start();
+                            new javax.swing.Timer(1500, e -> GlassPanePopup.closePopup(feedbackPanel)).start();
 
                             // Refresh table after marking complete
                             loadTasksFromDB();
@@ -598,4 +616,34 @@ public class TaskView extends javax.swing.JPanel {
         });
     }
 
+    public void checkDeadlineReminders() {
+        try {
+            if (taskController == null) {
+                taskController = new TaskController();
+            }
+            java.util.List<TaskDto> tasks = taskController.getAllTasks();
+
+            java.time.LocalDate today = java.time.LocalDate.now();
+            java.time.LocalDate tomorrow = today.plusDays(1);
+
+            for (TaskDto task : tasks) {
+                if (task.isCompleted()) {
+                    continue;                 // skip completed
+                }
+                java.time.LocalDate d = task.getDeadline();
+                if (d == null) {
+                    continue;
+                }
+
+                boolean todayDue = d.isEqual(today);
+                boolean tomorrowDue = d.isEqual(tomorrow);
+                if (todayDue || tomorrowDue) {
+                    String due = todayDue ? "today" : "tomorrow";
+                    FXPopupHelper.showReminderFXPopup(task.getSubject(), due);
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }

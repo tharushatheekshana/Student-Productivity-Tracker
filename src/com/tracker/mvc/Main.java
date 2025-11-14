@@ -4,6 +4,7 @@
  */
 package com.tracker.mvc;
 
+import com.tracker.mvc.form.TaskView;
 import com.tracker.mvc.form.Welcome;
 import com.tracker.mvc.view.DashboardView;
 
@@ -14,11 +15,8 @@ import com.tracker.mvc.view.DashboardView;
 public class Main {
 
     public static void main(String[] args) {
-        DashboardView dashboard = new DashboardView();
-//        dashboard.setVisible(true);
-//        new TimetableView().setVisible(true);
-//        new TaskView().setVisible(true);
-//        dashboard.setResizable(false);
-        new Welcome().setVisible(true);
+        Welcome welcome = new Welcome();
+        welcome.setVisible(true);
+
     }
 }

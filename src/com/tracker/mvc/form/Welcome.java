@@ -19,18 +19,26 @@ public class Welcome extends javax.swing.JFrame {
      */
     public Welcome() {
         initComponents();
-        setLocationRelativeTo(null);  
+        setLocationRelativeTo(null);
 
         javax.swing.Timer timer = new javax.swing.Timer(40, e -> {
             int value = progressBar.getValue() + 2;
             progressBar.setValue(value);
             if (value >= 100) {
                 ((javax.swing.Timer) e.getSource()).stop();
-                dispose(); 
-                new DashboardView().setVisible(true); 
+                dispose();
+
+                DashboardView dashboard = new DashboardView();
+                dashboard.setVisible(true);
+
+                // Schedule reminder popup after DashboardView is visible & glass pane is installed
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    dashboard.form1.checkDeadlineReminders();
+                });
             }
         });
         timer.start();
+
     }
 
     /**

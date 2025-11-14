@@ -11,6 +11,10 @@ import com.tracker.mvc.form.Calender;
 import com.tracker.mvc.form.Timetable;
 import com.tracker.mvc.form.Report;
 import com.tracker.mvc.form.TaskView;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.layout.AnchorPane;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
 
@@ -23,7 +27,7 @@ public class DashboardView extends javax.swing.JFrame {
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DashboardView.class.getName());
 
     private Dashboard dashboardForm = new Dashboard();
-    private TaskView form1 = new TaskView();
+    public TaskView form1 = new TaskView();
     private Timetable form2 = new Timetable();
     private Report form3 = new Report();
     private Calender form4 = new Calender();
@@ -41,6 +45,36 @@ public class DashboardView extends javax.swing.JFrame {
 
         initComponents();
 
+        // Single overlay JFXPanel (hidden initially)
+        final JFXPanel toastFxPanel = new JFXPanel();
+        toastFxPanel.setOpaque(false);
+        toastFxPanel.setVisible(false);
+        getLayeredPane().add(toastFxPanel, javax.swing.JLayeredPane.POPUP_LAYER);
+
+        // Initial bounds (top-right)
+        toastFxPanel.setBounds(getWidth() - 410, 24, 400, 140);
+
+        // Keep overlay top-right on resize
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                toastFxPanel.setBounds(getWidth() - 410, 24, 400, 140);
+            }
+        });
+
+        // Build transparent JavaFX scene once and init helper
+        javafx.application.Platform.runLater(() -> {
+            AnchorPane toastRoot = new AnchorPane();
+            toastRoot.setStyle("-fx-background-color: transparent;");
+            FXPopupHelper.init(toastRoot, toastFxPanel);
+            javafx.scene.Scene toastScene = new javafx.scene.Scene(toastRoot, 400, 140);
+            toastScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
+            toastFxPanel.setScene(toastScene);
+        });
+
+        System.out.println("Installing GlassPanePopup");
+        raven.popup.GlassPanePopup.install(this);
+
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (Exception ex) {
@@ -52,21 +86,22 @@ public class DashboardView extends javax.swing.JFrame {
         menu.addEventMenuSelected((int index) -> {
             switch (index) {
                 case 0 ->
-                    setForm(new Dashboard());
+                    setForm(dashboardForm);
                 case 1 ->
-                    setForm(new TaskView());
+                    setForm(form1);
                 case 2 ->
-                    setForm(new Calender());
+                    setForm(form4);
                 case 3 ->
-                    setForm(new Timetable());
+                    setForm(form2);
                 case 4 ->
-                    setForm(new Report());
+                    setForm(form3);
                 default -> {
                 }
             }
         });
 
-        setForm(new Dashboard());
+        setForm(dashboardForm);
+
     }
 
     private void setForm(JComponent com) {

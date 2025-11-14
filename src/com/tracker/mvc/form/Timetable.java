@@ -34,6 +34,13 @@ public class Timetable extends javax.swing.JPanel {
         loadGenTimetable();
         timePicker1.setEditor(txtTime);
         timePicker2.setEditor(txtTime1);
+
+        tblTimetable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                tblTimetableRowSelected();
+            }
+        });
+
     }
 
     /**
@@ -62,6 +69,7 @@ public class Timetable extends javax.swing.JPanel {
         btnGenTimetable = new javax.swing.JButton();
         btnAdd = new javax.swing.JButton();
         btnRemove = new javax.swing.JButton();
+        btnAdd1 = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         tblGenTimetable = new javax.swing.JTable();
 
@@ -95,6 +103,11 @@ public class Timetable extends javax.swing.JPanel {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
+        tblTimetable.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tblTimetableMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(tblTimetable);
 
         btnGenTimetable.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
@@ -121,6 +134,14 @@ public class Timetable extends javax.swing.JPanel {
             }
         });
 
+        btnAdd1.setFont(new java.awt.Font("Poppins", 0, 12)); // NOI18N
+        btnAdd1.setText("Update");
+        btnAdd1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAdd1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -133,20 +154,29 @@ public class Timetable extends javax.swing.JPanel {
                         .addComponent(btnGenTimetable)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtTime, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnAdd)
-                            .addComponent(txtAddSubject))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 48, Short.MAX_VALUE)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtTime1, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnRemove))
-                        .addGap(28, 28, 28))))
+                            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtTime, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
+                                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtAddSubject))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(btnAdd)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnAdd1)))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtTime1, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(28, 28, 28))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(btnRemove)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -164,15 +194,16 @@ public class Timetable extends javax.swing.JPanel {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel5)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnRemove))
+                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtAddSubject, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnAdd)))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnAdd)
+                            .addComponent(btnAdd1)
+                            .addComponent(btnRemove))))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 159, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -236,9 +267,18 @@ public class Timetable extends javax.swing.JPanel {
         genTimetable();
     }//GEN-LAST:event_btnGenTimetableActionPerformed
 
+    private void btnAdd1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAdd1ActionPerformed
+        updateSubjectAndPriority();
+    }//GEN-LAST:event_btnAdd1ActionPerformed
+
+    private void tblTimetableMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tblTimetableMouseClicked
+
+    }//GEN-LAST:event_tblTimetableMouseClicked
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnAdd1;
     private javax.swing.JButton btnGenTimetable;
     private javax.swing.JButton btnRemove;
     private javax.swing.JComboBox<String> jComboBox1;
@@ -455,4 +495,61 @@ public class Timetable extends javax.swing.JPanel {
             slotStart = slotEnd;
         }
     }
+
+    private void updateSubjectAndPriority() {
+        int selectedRow = tblTimetable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a subject to update.");
+            return;
+        }
+
+        String subjectName = txtAddSubject.getText().trim();
+        if (subjectName.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a subject name.");
+            return;
+        }
+
+        String priority = (String) jComboBox1.getSelectedItem();
+
+        try {
+            // Find the subject DTO by selected row
+            ArrayList<TimetableDto> subjects = timetableController.getAllSubjects();
+            TimetableDto dtoToUpdate = null;
+            String oldName = (String) tblTimetable.getValueAt(selectedRow, 0);
+            for (TimetableDto dto : subjects) {
+                if (dto.getName().equals(oldName)) {
+                    dtoToUpdate = dto;
+                    break;
+                }
+            }
+
+            if (dtoToUpdate != null) {
+                dtoToUpdate.setName(subjectName);
+                dtoToUpdate.setPriority(priority);
+
+                String result = timetableController.updateSubject(dtoToUpdate);
+                JOptionPane.showMessageDialog(this, result);
+                loadTimetable(); // refresh table
+                txtAddSubject.setText(""); // clear input
+            } else {
+                JOptionPane.showMessageDialog(this, "Subject not found.");
+            }
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error updating subject: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
+
+    private void tblTimetableRowSelected() {
+        int selectedRow = tblTimetable.getSelectedRow();
+        if (selectedRow != -1) {
+            String subject = (String) tblTimetable.getValueAt(selectedRow, 0);
+            String priority = (String) tblTimetable.getValueAt(selectedRow, 1);
+
+            txtAddSubject.setText(subject);
+            jComboBox1.setSelectedItem(priority);
+        }
+    }
+
 }

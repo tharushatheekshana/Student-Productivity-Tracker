@@ -22,7 +22,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import org.json.JSONObject;
 
@@ -54,9 +56,11 @@ public class Dashboard extends javax.swing.JPanel {
         }
 
         loadQuotesFromJsonl();
-        // Set a random quote on lblQuote
-        lblQuote.setText(getRandomQuote());
 
+        // Remove motivational message from lblQuote label
+        // lblQuote.setText(getRandomQuote());
+        // Show motivational popup once per day
+//        showMotivationalPopupOncePerDay();
         loadTasks();
 
         // disable vertical scrollbar, keep horizontal only
@@ -86,6 +90,38 @@ public class Dashboard extends javax.swing.JPanel {
         FlatLaf.registerCustomDefaultsSource("com.tracker.mvc.themes");
         jLabel1.setText(getTimeBasedGreeting());
 
+    }
+
+    private void showMotivationalPopupOncePerDay() {
+        Preferences prefs = Preferences.userNodeForPackage(Dashboard.class);
+        String lastShownDate = prefs.get("motivationalPopupDate", "");
+        String today = LocalDate.now().toString();
+
+        if (!today.equals(lastShownDate)) {
+            String message = getPlainQuoteWithAuthor();
+            JOptionPane.showMessageDialog(this, message, "Motivational Message", JOptionPane.INFORMATION_MESSAGE);
+            prefs.put("motivationalPopupDate", today);
+        }
+    }
+
+    private String getPlainQuoteWithAuthor() {
+        if (quotes.isEmpty()) {
+            return "No quotes available";
+        }
+
+        List<String> shortQuotes = quotes.stream()
+                .filter(q -> q.length() <= 60)
+                .collect(Collectors.toList());
+
+        if (shortQuotes.isEmpty()) {
+            return "No suitable quotes available";
+        }
+
+        int index = new Random().nextInt(shortQuotes.size());
+        String selectedQuote = shortQuotes.get(index);
+
+        // Remove HTML tags and unnecessary punctuation
+        return selectedQuote.replaceAll("^\"|\"$", ""); // Remove starting/ending quotes if present
     }
 
     /**
