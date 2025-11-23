@@ -9,7 +9,9 @@ import com.formdev.flatlaf.FlatLaf;
 import com.tracker.mvc.component.Card;
 import com.tracker.mvc.controller.TaskController;
 import com.tracker.mvc.dto.TaskDto;
+import com.tracker.mvc.event.TaskChangeListener;
 import com.tracker.mvc.model.Model_Card;
+import com.tracker.mvc.view.FXPopupHelper;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -24,8 +26,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.layout.AnchorPane;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
+import javax.swing.JLabel;
 import org.json.JSONObject;
 
 /**
@@ -41,10 +47,25 @@ public class Dashboard extends javax.swing.JPanel {
     private Timer countdownTimer;
     private final List<Timer> updateTimers = new ArrayList<>();
 
+    // JavaFX components for toast popup
+    private JFXPanel fxPanel;
+    private AnchorPane fxRootPane;
+
+    /**
+     * Returns the quote JLabel for external access (e.g., DashboardView)
+     */
+    public JLabel getQuoteLabel() {
+        JLabel temp = new JLabel();
+        temp.setText(getPlainQuoteWithAuthor());
+        return temp;
+    }
+
     /**
      * Creates new form Dashboard
      */
     public Dashboard() {
+        initJavaFX(); // Init JavaFX environment first
+
         initComponents();
 
         panelTodayTasks.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
@@ -57,10 +78,6 @@ public class Dashboard extends javax.swing.JPanel {
 
         loadQuotesFromJsonl();
 
-        // Remove motivational message from lblQuote label
-        // lblQuote.setText(getRandomQuote());
-        // Show motivational popup once per day
-//        showMotivationalPopupOncePerDay();
         loadTasks();
 
         // disable vertical scrollbar, keep horizontal only
@@ -71,40 +88,48 @@ public class Dashboard extends javax.swing.JPanel {
         jScrollPane1.getHorizontalScrollBar().putClientProperty(
                 FlatClientProperties.STYLE,
                 "trackArc:999;"
-                + "trackInsets:3,3,3,3;"
-                + "thumbInsets:3,3,3,3;"
-                + "background:$Table.background;"
-                + "thumb:darken($Component.accentColor,10%)"
-        );
+                        + "trackInsets:3,3,3,3;"
+                        + "thumbInsets:3,3,3,3;"
+                        + "background:$Table.background;"
+                        + "thumb:darken($Component.accentColor,10%)");
 
         // (optional) style vertical scrollbar too, in case you enable later
         jScrollPane1.getVerticalScrollBar().putClientProperty(
                 FlatClientProperties.STYLE,
                 "trackArc:999;"
-                + "trackInsets:3,3,3,3;"
-                + "thumbInsets:3,3,3,3;"
-                + "background:$Table.background;"
-                + "thumb:darken($Component.accentColor,10%)"
-        );
+                        + "trackInsets:3,3,3,3;"
+                        + "thumbInsets:3,3,3,3;"
+                        + "background:$Table.background;"
+                        + "thumb:darken($Component.accentColor,10%)");
 
         FlatLaf.registerCustomDefaultsSource("com.tracker.mvc.themes");
         jLabel1.setText(getTimeBasedGreeting());
 
     }
 
-    private void showMotivationalPopupOncePerDay() {
-        Preferences prefs = Preferences.userNodeForPackage(Dashboard.class);
-        String lastShownDate = prefs.get("motivationalPopupDate", "");
-        String today = LocalDate.now().toString();
+    private void initJavaFX() {
+        // Initializes JavaFX runtime and components for FX popups
+        fxPanel = new JFXPanel(); // initializes JavaFX platform internally
+        Platform.runLater(() -> {
+            fxRootPane = new AnchorPane();
+            FXPopupHelper.init(fxRootPane, fxPanel);
+        });
 
-        if (!today.equals(lastShownDate)) {
-            String message = getPlainQuoteWithAuthor();
-            JOptionPane.showMessageDialog(this, message, "Motivational Message", JOptionPane.INFORMATION_MESSAGE);
-            prefs.put("motivationalPopupDate", today);
-        }
+        // IMPORTANT: You must add fxPanel to your JFrame layered pane or UI
+        // so JavaFX can display overlays. For example, main JFrame:
+        // frame.getLayeredPane().add(fxPanel, JLayeredPane.POPUP_LAYER);
+        // fxPanel.setBounds(frame.getBounds());
+        // This part cannot be done inside Dashboard if Dashboard is JPanel only.
     }
 
-    private String getPlainQuoteWithAuthor() {
+    private void showMotivationalPopupEveryStart() {
+        String quote = getPlainQuoteWithAuthor();
+        Platform.runLater(() -> {
+            FXPopupHelper.showQuoteFXPopup(quote);
+        });
+    }
+
+    public String getPlainQuoteWithAuthor() {
         if (quotes.isEmpty()) {
             return "No quotes available";
         }
@@ -120,8 +145,7 @@ public class Dashboard extends javax.swing.JPanel {
         int index = new Random().nextInt(shortQuotes.size());
         String selectedQuote = shortQuotes.get(index);
 
-        // Remove HTML tags and unnecessary punctuation
-        return selectedQuote.replaceAll("^\"|\"$", ""); // Remove starting/ending quotes if present
+        return selectedQuote.replaceAll("^\"|\"$", "");
     }
 
     /**
@@ -130,11 +154,11 @@ public class Dashboard extends javax.swing.JPanel {
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated
+    // Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
-        lblQuote = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         jScrollPane4 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
@@ -149,11 +173,6 @@ public class Dashboard extends javax.swing.JPanel {
         jLabel1.setForeground(new java.awt.Color(50, 50, 50));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
-
-        lblQuote.setFont(new java.awt.Font("Poppins", 3, 12)); // NOI18N
-        lblQuote.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        lblQuote.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        lblQuote.setBorder(javax.swing.BorderFactory.createCompoundBorder());
 
         jLabel2.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(50, 50, 50));
@@ -184,64 +203,62 @@ public class Dashboard extends javax.swing.JPanel {
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel3)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 648, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 642, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel3)
+                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 648,
+                                                javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                                .addContainerGap()
+                                                .addGroup(jPanel1Layout
+                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addComponent(jLabel2)
+                                                        .addComponent(jScrollPane2,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE, 642,
+                                                                javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
         jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(5, 5, 5)
+                                .addComponent(jLabel2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 199,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
 
         jScrollPane4.setViewportView(jPanel1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 83, Short.MAX_VALUE)
-                .addComponent(lblQuote, javax.swing.GroupLayout.PREFERRED_SIZE, 363, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(16, 16, 16))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jSeparator1)
-                .addContainerGap())
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jLabel1)
+                                .addGap(16, 16, 16))
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(jSeparator1)
+                                .addContainerGap()));
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(lblQuote, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 13,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
+                                .addContainerGap()));
     }// </editor-fold>//GEN-END:initComponents
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
@@ -386,12 +403,13 @@ public class Dashboard extends javax.swing.JPanel {
         }
 
         // Use Georgia font, italic style, display as HTML
-        return "<html><span style='font-family:Georgia, serif; font-style: italic;'>" + selectedQuote + "</span></html>";
+        return "<html><span style='font-family:Georgia, serif; font-style: italic;'>" + selectedQuote
+                + "</span></html>";
     }
 
     private String getTimeBasedGreeting() {
         int hour = LocalDateTime.now().getHour();
-        if (hour >= 0 && hour < 12) {  // 12 AM to before 12 PM
+        if (hour >= 0 && hour < 12) { // 12 AM to before 12 PM
             return "Good morning";
         } else if (hour >= 12 && hour < 17) {
             return "Good afternoon";
@@ -402,4 +420,10 @@ public class Dashboard extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * Public method to refresh dashboard when tasks change
+     */
+    public void refreshDashboard() {
+        loadTasks();
+    }
 }

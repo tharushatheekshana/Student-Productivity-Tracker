@@ -33,7 +33,7 @@ public class Welcome extends javax.swing.JFrame {
 
                 // Schedule reminder popup after DashboardView is visible & glass pane is installed
                 javax.swing.SwingUtilities.invokeLater(() -> {
-                    dashboard.form1.checkDeadlineReminders();
+                    dashboard.getForm1().checkDeadlineReminders();
                 });
             }
         });

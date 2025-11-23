@@ -8,6 +8,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.tracker.mvc.controller.TaskController;
 import com.tracker.mvc.form.Dashboard;
 import com.tracker.mvc.form.Calender;
+import com.tracker.mvc.form.KanbanBoard;
 import com.tracker.mvc.form.Timetable;
 import com.tracker.mvc.form.Report;
 import com.tracker.mvc.form.TaskView;
@@ -24,13 +25,19 @@ import javax.swing.UIManager;
  */
 public class DashboardView extends javax.swing.JFrame {
 
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DashboardView.class.getName());
+    private static final java.util.logging.Logger logger = java.util.logging.Logger
+            .getLogger(DashboardView.class.getName());
 
-    private Dashboard dashboardForm = new Dashboard();
-    public TaskView form1 = new TaskView();
-    private Timetable form2 = new Timetable();
-    private Report form3 = new Report();
-    private Calender form4 = new Calender();
+    private final Dashboard dashboardForm = new Dashboard();
+    private final TaskView form1 = new TaskView();
+    private final Timetable form2 = new Timetable();
+    private final Report form3 = new Report();
+    private final Calender form4 = new Calender();
+    private final KanbanBoard kanbanBoard = new KanbanBoard();
+
+    private JFXPanel toastFxPanel;
+    private final int TOAST_PANEL_HEIGHT = 140;
+    private final int TOAST_PANEL_PADDING_TOP = 24;
 
     /**
      * Creates new form DashboardView
@@ -45,63 +52,116 @@ public class DashboardView extends javax.swing.JFrame {
 
         initComponents();
 
-        // Single overlay JFXPanel (hidden initially)
-        final JFXPanel toastFxPanel = new JFXPanel();
+        // Initialize and add JavaFX toast overlay panel at full width along top
+        toastFxPanel = new JFXPanel();
         toastFxPanel.setOpaque(false);
         toastFxPanel.setVisible(false);
         getLayeredPane().add(toastFxPanel, javax.swing.JLayeredPane.POPUP_LAYER);
 
-        // Initial bounds (top-right)
-        toastFxPanel.setBounds(getWidth() - 410, 24, 400, 140);
+        // Set initial bounds to full width
+        resizeToastPanel();
 
-        // Keep overlay top-right on resize
+        // Re-center the toast overlay on JFrame resize
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentResized(java.awt.event.ComponentEvent evt) {
-                toastFxPanel.setBounds(getWidth() - 410, 24, 400, 140);
+                resizeToastPanel();
             }
         });
 
-        // Build transparent JavaFX scene once and init helper
-        javafx.application.Platform.runLater(() -> {
+        Platform.runLater(() -> {
             AnchorPane toastRoot = new AnchorPane();
             toastRoot.setStyle("-fx-background-color: transparent;");
             FXPopupHelper.init(toastRoot, toastFxPanel);
-            javafx.scene.Scene toastScene = new javafx.scene.Scene(toastRoot, 400, 140);
+            Scene toastScene = new Scene(toastRoot, toastFxPanel.getWidth(), TOAST_PANEL_HEIGHT);
             toastScene.setFill(javafx.scene.paint.Color.TRANSPARENT);
             toastFxPanel.setScene(toastScene);
+
+            // Add listener (using lambda with final variable trick)
+            javafx.beans.value.ChangeListener<Number>[] listener = new javafx.beans.value.ChangeListener[1];
+            listener[0] = (obs, oldVal, newVal) -> {
+                if (newVal.doubleValue() > 0) {
+                    showMotivationalToastCentered();
+                    toastRoot.widthProperty().removeListener(listener[0]);
+                }
+            };
+            toastRoot.widthProperty().addListener(listener[0]);
         });
 
-        System.out.println("Installing GlassPanePopup");
-        raven.popup.GlassPanePopup.install(this);
+        showMotivationalToastCentered();
 
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        menu.initMoving(DashboardView.this);
+
+        menu.initMoving(this);
         this.setLocationRelativeTo(null);
 
         menu.addEventMenuSelected((int index) -> {
-            switch (index) {
-                case 0 ->
-                    setForm(dashboardForm);
-                case 1 ->
-                    setForm(form1);
-                case 2 ->
-                    setForm(form4);
-                case 3 ->
-                    setForm(form2);
-                case 4 ->
-                    setForm(form3);
-                default -> {
+            try {
+                switch (index) {
+                    case 0 ->
+                        setForm(dashboardForm);
+                    case 1 ->
+                        setForm(form1);
+                    case 2 ->
+                        setForm(form4);
+                    case 3 ->
+                        setForm(form2);
+                    case 4 ->
+                        setForm(form3);
+                    case 5 ->
+                        setForm(kanbanBoard);
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Error switching forms: " + e.getMessage());
+            }
+        });
+
+        // Set up task change listeners - when TaskView or Kanban changes, refresh both
+        form1.setTaskChangeListener(() -> {
+            try {
+                dashboardForm.refreshDashboard();
+                kanbanBoard.refreshKanban();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Error refreshing dashboard: " + e.getMessage());
+            }
+        });
+
+        kanbanBoard.setTaskChangeListener(() -> {
+            try {
+                dashboardForm.refreshDashboard();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("Error refreshing from kanban: " + e.getMessage());
             }
         });
 
         setForm(dashboardForm);
+    }
 
+    public TaskView getForm1() {
+        return form1;
+    }
+
+    // Resize toast overlay panel to full width with fixed height at top offset
+    private void resizeToastPanel() {
+        int frameWidth = getWidth();
+        int frameHeight = getHeight();
+        toastFxPanel.setBounds(0, 0, frameWidth, frameHeight);
+    }
+
+    // Show motivational toast popup centered horizontally inside overlay panel
+    private void showMotivationalToastCentered() {
+        System.out.println("QUOTE TOAST CALLED");
+        String motivationalQuote = dashboardForm.getQuoteLabel().getText();
+        System.out.println("QUOTE: " + motivationalQuote);
+
+        FXPopupHelper.showQuoteFXPopup(motivationalQuote);
     }
 
     private void setForm(JComponent com) {
@@ -117,7 +177,8 @@ public class DashboardView extends javax.swing.JFrame {
      * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated
+    // Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         panelBorder1 = new com.tracker.mvc.swing.PanelBorder();
@@ -141,32 +202,34 @@ public class DashboardView extends javax.swing.JFrame {
         javax.swing.GroupLayout panelBorder1Layout = new javax.swing.GroupLayout(panelBorder1);
         panelBorder1.setLayout(panelBorder1Layout);
         panelBorder1Layout.setHorizontalGroup(
-            panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelBorder1Layout.createSequentialGroup()
-                .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 677, Short.MAX_VALUE)
-                .addContainerGap())
-        );
+                panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(panelBorder1Layout.createSequentialGroup()
+                                .addComponent(menu, javax.swing.GroupLayout.PREFERRED_SIZE, 204,
+                                        javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 677, Short.MAX_VALUE)
+                                .addContainerGap()));
         panelBorder1Layout.setVerticalGroup(
-            panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBorder1Layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addGroup(panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-        );
+                panelBorder1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelBorder1Layout.createSequentialGroup()
+                                .addGap(0, 0, Short.MAX_VALUE)
+                                .addGroup(panelBorder1Layout
+                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(menu, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelBorder1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(panelBorder1, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panelBorder1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(panelBorder1, javax.swing.GroupLayout.DEFAULT_SIZE,
+                                javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -176,9 +239,13 @@ public class DashboardView extends javax.swing.JFrame {
      */
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+        // <editor-fold defaultstate="collapsed" desc=" Look and feel setting code
+        // (optional) ">
+        /*
+         * If Nimbus (introduced in Java SE 6) is not available, stay with the default
+         * look and feel.
+         * For details see
+         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
          */
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
@@ -190,7 +257,7 @@ public class DashboardView extends javax.swing.JFrame {
         } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
             logger.log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
+        // </editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> new DashboardView().setVisible(true));

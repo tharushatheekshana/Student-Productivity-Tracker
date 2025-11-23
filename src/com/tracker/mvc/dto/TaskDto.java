@@ -17,20 +17,23 @@ public class TaskDto {
     private LocalDate deadline;
     private boolean completed;
     private boolean overdue;
+    private String status; // "TODO", "IN_PROGRESS", "DONE"
 
     public TaskDto() {
+        this.status = "TODO"; // default status
     }
 
-    public TaskDto(String taskId, String subject, String description, LocalDate deadline, boolean completed, boolean overdue) {
+    public TaskDto(String taskId, String subject, String description, LocalDate deadline, boolean completed,
+            boolean overdue) {
         this.taskId = taskId;
         this.subject = subject;
         this.description = description;
         this.deadline = deadline;
         this.completed = completed;
         this.overdue = overdue;
+        this.status = "TODO"; // default status
     }
 
-    
     /**
      * @return the taskId
      */
@@ -115,9 +118,24 @@ public class TaskDto {
         this.overdue = overdue;
     }
 
+    /**
+     * @return the status
+     */
+    public String getStatus() {
+        return status;
+    }
+
+    /**
+     * @param status the status to set (TODO, IN_PROGRESS, DONE)
+     */
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
-        return "TaskDto{" + "taskId=" + taskId + ", subject=" + subject + ", description=" + description + ", deadline=" + deadline + ", completed=" + completed + ", overdue=" + overdue + '}';
+        return "TaskDto{" + "taskId=" + taskId + ", subject=" + subject + ", description=" + description + ", deadline="
+                + deadline + ", completed=" + completed + ", overdue=" + overdue + ", status=" + status + '}';
     }
-    
+
 }

@@ -30,7 +30,7 @@ public class FXPopupHelper {
     private static final int MIN_OVERLAY_H = 140;
 
     // Layer + swing overlay
-    private static AnchorPane toastLayer;
+    public static AnchorPane toastLayer;
     private static JFXPanel overlayPanel;
 
     // Queue control

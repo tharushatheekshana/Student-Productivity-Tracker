@@ -35,21 +35,32 @@ public class TaskModel {
                 + "description TEXT, "
                 + "deadline TEXT, "
                 + "completed INTEGER, "
-                + "overdue INTEGER"
+                + "overdue INTEGER, "
+                + "status TEXT DEFAULT 'TODO'"
                 + ");";
         Statement stmt = CONNECTION.createStatement();
         stmt.execute(sql);
+
+        // Add status column if it doesn't exist (for existing databases)
+        try {
+            String alterSql = "ALTER TABLE tasks ADD COLUMN status TEXT DEFAULT 'TODO';";
+            Statement alterStmt = CONNECTION.createStatement();
+            alterStmt.execute(alterSql);
+        } catch (Exception e) {
+            // Column already exists, ignore
+        }
     }
 
     // Save a new task
     public String saveTask(TaskDto taskDto) throws Exception {
-        String sql = "INSERT INTO tasks(subject, description, deadline, completed, overdue) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO tasks(subject, description, deadline, completed, overdue, status) VALUES (?,?,?,?,?,?)";
         PreparedStatement statement = CONNECTION.prepareStatement(sql);
         statement.setString(1, taskDto.getSubject());
         statement.setString(2, taskDto.getDescription());
         statement.setString(3, taskDto.getDeadline().toString());
         statement.setInt(4, taskDto.isCompleted() ? 1 : 0);
         statement.setInt(5, taskDto.isOverdue() ? 1 : 0);
+        statement.setString(6, taskDto.getStatus() != null ? taskDto.getStatus() : "TODO");
 
         if (statement.executeUpdate() > 0) {
             return "Success";
@@ -72,8 +83,8 @@ public class TaskModel {
                     rst.getString("description"),
                     LocalDate.parse(rst.getString("deadline")),
                     rst.getInt("completed") == 1,
-                    rst.getInt("overdue") == 1
-            );
+                    rst.getInt("overdue") == 1);
+            dto.setStatus(rst.getString("status") != null ? rst.getString("status") : "TODO");
             return dto;
         }
 
@@ -82,14 +93,15 @@ public class TaskModel {
 
     // Update existing task
     public String updateTask(TaskDto taskDto) throws Exception {
-        String sql = "UPDATE tasks SET subject=?, description=?, deadline=?, completed=?, overdue=? WHERE taskId=?";
+        String sql = "UPDATE tasks SET subject=?, description=?, deadline=?, completed=?, overdue=?, status=? WHERE taskId=?";
         PreparedStatement statement = CONNECTION.prepareStatement(sql);
         statement.setString(1, taskDto.getSubject());
         statement.setString(2, taskDto.getDescription());
         statement.setString(3, taskDto.getDeadline().toString());
         statement.setInt(4, taskDto.isCompleted() ? 1 : 0);
         statement.setInt(5, taskDto.isOverdue() ? 1 : 0);
-        statement.setString(6, taskDto.getTaskId());
+        statement.setString(6, taskDto.getStatus() != null ? taskDto.getStatus() : "TODO");
+        statement.setString(7, taskDto.getTaskId());
 
         if (statement.executeUpdate() > 0) {
             return "Success";
@@ -126,8 +138,8 @@ public class TaskModel {
                     rst.getString("description"),
                     LocalDate.parse(rst.getString("deadline")),
                     rst.getInt("completed") == 1,
-                    rst.getInt("overdue") == 1
-            );
+                    rst.getInt("overdue") == 1);
+            dto.setStatus(rst.getString("status") != null ? rst.getString("status") : "TODO");
             tasks.add(dto);
         }
 
