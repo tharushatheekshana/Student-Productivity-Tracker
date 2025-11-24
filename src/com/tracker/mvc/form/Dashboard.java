@@ -1,20 +1,19 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ * Fluent-style Dashboard with JavaFX header inside scroll:
+ * - Greeting (left) + quote (right) in a full-width card
+ * - Quote picked once per app start
+ * - Swing container + JavaFX content
  */
 package com.tracker.mvc.form;
 
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatLaf;
-import com.tracker.mvc.component.Card;
 import com.tracker.mvc.controller.TaskController;
 import com.tracker.mvc.dto.TaskDto;
-import com.tracker.mvc.event.TaskChangeListener;
-import com.tracker.mvc.model.Model_Card;
-import com.tracker.mvc.view.FXPopupHelper;
+
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,325 +23,440 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Label;
 import javafx.scene.layout.AnchorPane;
-import javax.swing.JOptionPane;
-import javax.swing.Timer;
-import javax.swing.JLabel;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
+import javafx.util.Duration;
+
 import org.json.JSONObject;
 
-/**
- *
- * @author Theekshana
- */
-public class Dashboard extends javax.swing.JPanel {
+public class Dashboard extends JPanel {
+    @Override
+    protected void paintComponent(java.awt.Graphics g) {
+        super.paintComponent(g);
+        java.awt.Graphics2D g2d = (java.awt.Graphics2D) g;
+        int w = getWidth();
+        int h = getHeight();
+        java.awt.GradientPaint gp = new java.awt.GradientPaint(
+                0, 0, Color.decode("#000000"), // top color
+                0, h, Color.decode("#434343") // bottom color
+        );
 
-    private TaskController taskController;
-    private javax.swing.JScrollPane scrollPane;
-    private List<String> quotes = new ArrayList<>();
-    private Random random = new Random();
-    private Timer countdownTimer;
-    private final List<Timer> updateTimers = new ArrayList<>();
-
-    // JavaFX components for toast popup
-    private JFXPanel fxPanel;
-    private AnchorPane fxRootPane;
-
-    /**
-     * Returns the quote JLabel for external access (e.g., DashboardView)
-     */
-    public JLabel getQuoteLabel() {
-        JLabel temp = new JLabel();
-        temp.setText(getPlainQuoteWithAuthor());
-        return temp;
+        g2d.setPaint(gp);
+        g2d.fillRect(0, 0, w, h);
     }
 
-    /**
-     * Creates new form Dashboard
-     */
+    // -------- Data / controller --------
+    private TaskController taskController;
+    private final List<String> quotes = new ArrayList<>();
+    private final Random random = new Random();
+
+    // Quote & greeting for this app run
+    private String dailyQuote;
+    private String greetingText;
+
+    // -------- Swing UI --------
+    private JFXPanel fxDashboardPanel;
+
+    // -------- JavaFX task containers --------
+    private VBox fxTodayTasksBox;
+    private VBox fxUpcomingTasksBox;
+
     public Dashboard() {
-        initJavaFX(); // Init JavaFX environment first
+        // FlatLaf theme defaults
+        FlatLaf.registerCustomDefaultsSource("com.tracker.mvc.themes");
 
-        initComponents();
+        initSwingUI(); // Swing container (only center JFXPanel)
 
-        panelTodayTasks.setLayout(new FlowLayout(FlowLayout.LEFT, 15, 15));
+        // Load quotes first so we can pick dailyQuote
+        loadQuotesFromJsonl();
+        dailyQuote = getPlainQuoteWithAuthor();
+        greetingText = getTimeBasedGreeting();
 
+        // FIX: initialize controller BEFORE JavaFX builds header
         try {
             this.taskController = new TaskController();
         } catch (Exception ex) {
             System.out.println("Error initializing TaskController: " + ex.getMessage());
         }
 
-        loadQuotesFromJsonl();
+        // Now JavaFX has access to valid tasks
+        initDashboardJavaFX();
 
         loadTasks();
-
-        // disable vertical scrollbar, keep horizontal only
-        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-
-        // beautify scrollbar with FlatLaf style
-        jScrollPane1.getHorizontalScrollBar().putClientProperty(
-                FlatClientProperties.STYLE,
-                "trackArc:999;"
-                        + "trackInsets:3,3,3,3;"
-                        + "thumbInsets:3,3,3,3;"
-                        + "background:$Table.background;"
-                        + "thumb:darken($Component.accentColor,10%)");
-
-        // (optional) style vertical scrollbar too, in case you enable later
-        jScrollPane1.getVerticalScrollBar().putClientProperty(
-                FlatClientProperties.STYLE,
-                "trackArc:999;"
-                        + "trackInsets:3,3,3,3;"
-                        + "thumbInsets:3,3,3,3;"
-                        + "background:$Table.background;"
-                        + "thumb:darken($Component.accentColor,10%)");
-
-        FlatLaf.registerCustomDefaultsSource("com.tracker.mvc.themes");
-        jLabel1.setText(getTimeBasedGreeting());
-
+        // showMotivationalPopupEveryStart();
     }
 
-    private void initJavaFX() {
-        // Initializes JavaFX runtime and components for FX popups
-        fxPanel = new JFXPanel(); // initializes JavaFX platform internally
+    // Public: for layered pane overlay
+    public JFXPanel getFxOverlayPanel() {
+        return null;
+    }
+
+    // Public: external access to same daily quote
+    public JLabel getQuoteLabel() {
+        JLabel temp = new JLabel();
+        String text = (dailyQuote != null && !dailyQuote.isBlank())
+                ? dailyQuote
+                : getPlainQuoteWithAuthor();
+        temp.setText(text);
+        temp.setFont(new java.awt.Font("Georgia", java.awt.Font.ITALIC, 14));
+        temp.setForeground(new Color(120, 120, 120));
+        return temp;
+    }
+
+    // ======================================================================
+    // JavaFX overlay (for FXPopupHelper)
+    // ======================================================================
+    private void initOverlayJavaFX() {
+        // Overlay popup logic removed
+    }
+
+    // ======================================================================
+    // Swing container (just hosts JavaFX board)
+    // ======================================================================
+    private void initSwingUI() {
+        setLayout(new BorderLayout());
+        setOpaque(false); // Let paintComponent handle background
+
+        JPanel centerCard = new JPanel(new BorderLayout());
+        centerCard.setOpaque(true);
+        centerCard.setBackground(new Color(0, 0, 0, 0));
+        centerCard.setBorder(javax.swing.BorderFactory.createEmptyBorder(24, 24, 24, 24));
+
+        JPanel fxContainer = new JPanel(new BorderLayout());
+        fxContainer.setOpaque(true);
+        fxContainer.setBackground(new Color(240, 244, 255)); // not pure white
+        fxContainer.putClientProperty(FlatClientProperties.STYLE,
+                "arc:24; " +
+                        "borderWidth:1; " +
+                        "borderColor:#d3ddf3; " +
+                        "background:$Panel.background; " +
+                        "shadow:shadowHigh;");
+
+        fxDashboardPanel = new JFXPanel();
+        fxDashboardPanel.setPreferredSize(new Dimension(0, 480));
+
+        fxContainer.add(fxDashboardPanel, BorderLayout.CENTER);
+        centerCard.add(fxContainer, BorderLayout.CENTER);
+
+        add(centerCard, BorderLayout.CENTER);
+    }
+
+    // ======================================================================
+    // JavaFX content: header card + task board (inside scroll)
+    // ======================================================================
+    private void initDashboardJavaFX() {
         Platform.runLater(() -> {
-            fxRootPane = new AnchorPane();
-            FXPopupHelper.init(fxRootPane, fxPanel);
+            fxTodayTasksBox = new VBox(12);
+            fxUpcomingTasksBox = new VBox(12);
+            fxTodayTasksBox.setPadding(new Insets(4));
+            fxUpcomingTasksBox.setPadding(new Insets(4));
+
+            // -------- Header card (greeting + quote) --------
+            Label greetingLbl = new Label(greetingText);
+            greetingLbl.setStyle(
+                    "-fx-font-family: 'Poppins';" +
+                            "-fx-font-weight: bold;" +
+                            "-fx-font-size: 22;" +
+                            "-fx-text-fill: #0F172A;" +
+                            "-fx-wrap-text: false;");
+            greetingLbl.setMaxWidth(Double.MAX_VALUE);
+            greetingLbl.setMinWidth(Region.USE_PREF_SIZE);
+
+            // QUOTE (this will fade out)
+            Label quoteLbl = new Label("“" + dailyQuote + "”");
+            quoteLbl.setWrapText(true);
+            quoteLbl.setMaxWidth(420);
+            quoteLbl.setStyle(
+                    "-fx-font-family: 'Georgia';" +
+                            "-fx-font-style: italic;" +
+                            "-fx-font-size: 13;" +
+                            "-fx-text-fill: #475569;");
+
+            // Reminders label (hidden initially, will cycle through reminders)
+            Label remindersLbl = new Label();
+            remindersLbl.setWrapText(true);
+            remindersLbl.setMaxWidth(420);
+            remindersLbl.setStyle(
+                    "-fx-font-family: 'Poppins';" +
+                            "-fx-font-size: 13;" +
+                            "-fx-text-fill: #e11d48;" +
+                            "-fx-font-weight: bold;");
+            remindersLbl.setVisible(false);
+
+            // Prepare reminders: today and tomorrow's tasks
+            List<String> reminders = new ArrayList<>();
+            LocalDate today = LocalDate.now();
+            LocalDate tomorrow = today.plusDays(1);
+            ArrayList<TaskDto> allTasks = new ArrayList<>();
+            try {
+                if (taskController != null) {
+                    allTasks = taskController.getAllTasks();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            for (TaskDto task : allTasks) {
+                if (task.getDeadline() != null && !task.getDeadline().isBefore(today)) {
+                    String when;
+                    if (task.getDeadline().equals(today)) {
+                        when = "today";
+                    } else if (task.getDeadline().equals(tomorrow)) {
+                        when = "tomorrow";
+                    } else {
+                        when = "on " + task.getDeadline().toString();
+                    }
+                    String reminderText = "“Your task '" + task.getSubject() + "' is due " + when
+                            + ". Don’t forget to complete it!”";
+                    reminders.add(reminderText);
+                }
+            }
+            if (reminders.isEmpty()) {
+                reminders.add("No reminders");
+            }
+
+            Region spacer = new Region();
+            HBox.setHgrow(spacer, Priority.ALWAYS);
+
+            HBox headerRow = new HBox(18, greetingLbl, spacer, quoteLbl);
+            headerRow.setAlignment(Pos.CENTER_LEFT);
+
+            // When quote fades out, show reminders in its place
+            FadeTransition fadeQuote = new FadeTransition(Duration.seconds(1.5), quoteLbl);
+            fadeQuote.setFromValue(1.0);
+            fadeQuote.setToValue(0.0);
+
+            Timeline delayQuote = new Timeline(new KeyFrame(Duration.seconds(7), e -> fadeQuote.play()));
+            delayQuote.play();
+
+            fadeQuote.setOnFinished(e -> {
+                int idx = headerRow.getChildren().indexOf(quoteLbl);
+                headerRow.getChildren().remove(quoteLbl);
+                remindersLbl.setVisible(true);
+                headerRow.getChildren().add(idx, remindersLbl);
+
+                // Cycle through reminders one by one every 3 seconds
+                final int[] reminderIndex = { 0 };
+                remindersLbl.setText(reminders.get(reminderIndex[0]));
+                Timeline reminderTimeline = new Timeline(new KeyFrame(Duration.seconds(3), ev -> {
+                    reminderIndex[0] = (reminderIndex[0] + 1) % reminders.size();
+                    remindersLbl.setText(reminders.get(reminderIndex[0]));
+                }));
+                reminderTimeline.setCycleCount(Timeline.INDEFINITE);
+                reminderTimeline.play();
+            });
+
+            // Fluent gradient header card with color
+            VBox headerCard = new VBox(headerRow);
+            headerCard.setPadding(new Insets(18, 24, 18, 24));
+            headerCard.setStyle(
+                    "-fx-background-radius: 22;" +
+                            "-fx-background-color: white;" +
+                            "-fx-effect: dropshadow(gaussian, rgba(15,23,42,0.15), 20, 0.0, 0, 8);");
+
+            // ---- QUOTE fades out after 7 seconds (greeting stays) ----
+            // (handled above, only one fadeQuote definition)
+
+            // -------- Task columns --------
+            VBox todayColumn = createColumn("Today Tasks", fxTodayTasksBox);
+            VBox upcomingColumn = createColumn("Upcoming Tasks", fxUpcomingTasksBox);
+
+            todayColumn.setPrefWidth(380);
+            upcomingColumn.setPrefWidth(380);
+
+            HBox columns = new HBox(24, todayColumn, upcomingColumn);
+            columns.setAlignment(Pos.TOP_CENTER);
+            columns.setFillHeight(true);
+
+            // -------- Scroll content (header + columns) --------
+            VBox content = new VBox(18, headerCard, columns);
+            content.setPadding(new Insets(18, 18, 18, 18));
+            content.setStyle("-fx-background-color: transparent;");
+
+            ScrollPane scroll = new ScrollPane(content);
+            scroll.setFitToWidth(true);
+            scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            scroll.setStyle(
+                    "-fx-background: linear-gradient(to bottom, #000000, #434343); " +
+                            "-fx-background-color: linear-gradient(to bottom, #000000, #434343); " +
+                            "-fx-background-insets: 0;");
+
+            BorderPane root = new BorderPane(scroll);
+            root.setPadding(new Insets(0));
+            root.setStyle("-fx-background-color: linear-gradient(to bottom, #000000, #434343);"); // Match sidebar
+
+            Scene scene = new Scene(root);
+            fxDashboardPanel.setScene(scene);
         });
-
-        // IMPORTANT: You must add fxPanel to your JFrame layered pane or UI
-        // so JavaFX can display overlays. For example, main JFrame:
-        // frame.getLayeredPane().add(fxPanel, JLayeredPane.POPUP_LAYER);
-        // fxPanel.setBounds(frame.getBounds());
-        // This part cannot be done inside Dashboard if Dashboard is JPanel only.
     }
 
-    private void showMotivationalPopupEveryStart() {
-        String quote = getPlainQuoteWithAuthor();
-        Platform.runLater(() -> {
-            FXPopupHelper.showQuoteFXPopup(quote);
-        });
+    private VBox createColumn(String title, VBox contentBox) {
+        Label titleLbl = new Label(title);
+        titleLbl.setStyle(
+                "-fx-font-family: 'Poppins';" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 18;" +
+                        "-fx-text-fill: #111827;");
+
+        VBox column = new VBox(12, titleLbl, contentBox);
+        column.setPadding(new Insets(16));
+        column.setStyle(
+                // softer bluish column card, not harsh white
+                "-fx-background-color: rgba(247,249,255,0.92);" +
+                        "-fx-background-radius: 24;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(15,23,42,0.14), 18, 0.0, 0, 8);");
+        return column;
     }
 
-    public String getPlainQuoteWithAuthor() {
-        if (quotes.isEmpty()) {
-            return "No quotes available";
-        }
-
-        List<String> shortQuotes = quotes.stream()
-                .filter(q -> q.length() <= 60)
-                .collect(Collectors.toList());
-
-        if (shortQuotes.isEmpty()) {
-            return "No suitable quotes available";
-        }
-
-        int index = new Random().nextInt(shortQuotes.size());
-        String selectedQuote = shortQuotes.get(index);
-
-        return selectedQuote.replaceAll("^\"|\"$", "");
-    }
-
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated
-    // Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-
-        jLabel1 = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        panelTodayTasks = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        panelTodayTasks1 = new javax.swing.JPanel();
-
-        jLabel1.setFont(new java.awt.Font("Poppins", 1, 24)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(50, 50, 50));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
-
-        jLabel2.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(50, 50, 50));
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel2.setText("Today Tasks");
-        jLabel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
-
-        jScrollPane1.setBorder(null);
-        jScrollPane1.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
-        panelTodayTasks.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        panelTodayTasks.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 15, 15));
-        jScrollPane1.setViewportView(panelTodayTasks);
-
-        jLabel3.setFont(new java.awt.Font("Poppins", 1, 18)); // NOI18N
-        jLabel3.setForeground(new java.awt.Color(50, 50, 50));
-        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        jLabel3.setText("Upcoming Tasks");
-        jLabel3.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 10, 5, 10));
-
-        jScrollPane2.setBorder(null);
-        jScrollPane2.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
-        panelTodayTasks1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        panelTodayTasks1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 15, 15));
-        jScrollPane2.setViewportView(panelTodayTasks1);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jLabel3)
-                                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 648,
-                                                javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                                .addContainerGap()
-                                                .addGroup(jPanel1Layout
-                                                        .createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                        .addComponent(jLabel2)
-                                                        .addComponent(jScrollPane2,
-                                                                javax.swing.GroupLayout.PREFERRED_SIZE, 642,
-                                                                javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-        jPanel1Layout.setVerticalGroup(
-                jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(5, 5, 5)
-                                .addComponent(jLabel2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 200,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jLabel3)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 199,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-
-        jScrollPane4.setViewportView(jPanel1);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                        .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jLabel1)
-                                .addGap(16, 16, 16))
-                        .addGroup(layout.createSequentialGroup()
-                                .addComponent(jSeparator1)
-                                .addContainerGap()));
-        layout.setVerticalGroup(
-                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jLabel1)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 13,
-                                        javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
-                                .addContainerGap()));
-    }// </editor-fold>//GEN-END:initComponents
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JLabel lblQuote;
-    private javax.swing.JPanel panelTodayTasks;
-    private javax.swing.JPanel panelTodayTasks1;
-    // End of variables declaration//GEN-END:variables
-
+    // ======================================================================
+    // Tasks
+    // ======================================================================
     public void loadTasks() {
-        panelTodayTasks.removeAll();
-        panelTodayTasks1.removeAll();
-
         LocalDate today = LocalDate.now();
+
+        ArrayList<TaskDto> allTasks = new ArrayList<>();
         try {
-            ArrayList<TaskDto> allTasks = taskController.getAllTasks();
+            if (taskController != null) {
+                allTasks = taskController.getAllTasks();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        final ArrayList<TaskDto> tasksCopy = allTasks;
+
+        Platform.runLater(() -> {
+            if (fxTodayTasksBox == null || fxUpcomingTasksBox == null) {
+                return;
+            }
+
+            fxTodayTasksBox.getChildren().clear();
+            fxUpcomingTasksBox.getChildren().clear();
+
             boolean hasTodayTasks = false;
             boolean hasUpcomingTasks = false;
 
-            for (TaskDto task : allTasks) {
+            for (TaskDto task : tasksCopy) {
+                if (task.getDeadline() == null)
+                    continue;
+
                 if (task.getDeadline().equals(today)) {
                     hasTodayTasks = true;
-                    panelTodayTasks.add(createCardForTask(task));
+                    fxTodayTasksBox.getChildren().add(createFxCardForTask(task));
                 } else if (task.getDeadline().isAfter(today)) {
                     hasUpcomingTasks = true;
-                    panelTodayTasks1.add(createCardForTask(task));
+                    fxUpcomingTasksBox.getChildren().add(createFxCardForTask(task));
                 }
             }
 
             if (!hasTodayTasks) {
-                addNoTasksLabel(panelTodayTasks, "No tasks today");
+                fxTodayTasksBox.getChildren().add(createEmptyFxLabel("No tasks today"));
             }
             if (!hasUpcomingTasks) {
-                addNoTasksLabel(panelTodayTasks1, "No upcoming tasks");
+                fxUpcomingTasksBox.getChildren().add(createEmptyFxLabel("No upcoming tasks"));
             }
-
-            panelTodayTasks.revalidate();
-            panelTodayTasks.repaint();
-            panelTodayTasks1.revalidate();
-            panelTodayTasks1.repaint();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
     }
 
-    private Card createCardForTask(TaskDto task) {
-        Card card = new Card();
-        String subjectHtml = "<html><p style='width:200px;'>" + task.getSubject() + "</p></html>";
-        String description = task.getDescription();
+    private VBox createFxCardForTask(TaskDto task) {
+        String subject = (task.getSubject() == null || task.getSubject().isBlank())
+                ? "(No subject)"
+                : task.getSubject();
 
-        // Calculate initial countdown string
-        String countdownText = getCountdownText(task.getDeadline());
+        Label subjectLbl = new Label(subject);
+        subjectLbl.setStyle(
+                "-fx-font-family: 'Poppins';" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-font-size: 15;" +
+                        "-fx-text-fill: #111827;");
 
-        // Create Model_Card with countdown
-        Model_Card model = new Model_Card(null, subjectHtml, countdownText, description);
-        card.setData(model);
-        card.setPreferredSize(new Dimension(250, 150));
+        Label descriptionLbl = new Label(task.getDescription() == null ? "" : task.getDescription());
+        descriptionLbl.setWrapText(true);
+        descriptionLbl.setStyle(
+                "-fx-font-family: 'Poppins';" +
+                        "-fx-font-size: 13;" +
+                        "-fx-text-fill: #4b5563;");
 
-        // Setup a Timer to update countdown every second
-        Timer timer = new Timer(1000, e -> {
-            String newCountdown = getCountdownText(task.getDeadline());
-            model.setValues(newCountdown); // update countdown in the model
-            card.setData(model);
-            card.repaint();
-        });
-        timer.start();
-        updateTimers.add(timer); // keep reference so you can stop them later if needed
+        Label deadlineLbl = new Label("Due: " + task.getDeadline());
+        deadlineLbl.setStyle(
+                "-fx-font-family: 'Poppins';" +
+                        "-fx-font-size: 12;" +
+                        "-fx-text-fill: #9ca3af;");
+
+        Label countdownLbl = new Label();
+        countdownLbl.setStyle(
+                "-fx-font-family: 'Poppins';" +
+                        "-fx-font-size: 12;" +
+                        "-fx-text-fill: #0a84ff;");
+
+        updateCountdownLabel(countdownLbl, task.getDeadline());
+        Timeline timeline = new Timeline(
+                new KeyFrame(Duration.ZERO, e -> updateCountdownLabel(countdownLbl, task.getDeadline())),
+                new KeyFrame(Duration.seconds(1)));
+        timeline.setCycleCount(Animation.INDEFINITE);
+        timeline.play();
+
+        VBox card = new VBox(6, subjectLbl, descriptionLbl, deadlineLbl, countdownLbl);
+        card.setPadding(new Insets(12, 14, 12, 14));
+        card.setMinWidth(0);
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setStyle(
+                // softer bluish task card, not pure white
+                "-fx-background-color: #FAFCFF;" +
+                        "-fx-background-radius: 18;" +
+                        "-fx-border-color: rgba(148,163,184,0.35);" +
+                        "-fx-border-radius: 18;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(15,23,42,0.12), 12, 0.0, 0, 4);");
 
         return card;
     }
 
-    private String getCountdownText(LocalDate deadline) {
+    private Label createEmptyFxLabel(String text) {
+        Label label = new Label(text);
+        label.setStyle(
+                "-fx-font-family: 'Poppins';" +
+                        "-fx-font-size: 13;" +
+                        "-fx-text-fill: #9ca3af;");
+        return label;
+    }
+
+    private void updateCountdownLabel(Label label, LocalDate deadline) {
+        if (deadline == null) {
+            label.setText("");
+            return;
+        }
+
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime endOfDay = deadline.atTime(23, 59, 59); // countdown to end of deadline day
+        LocalDateTime endOfDay = deadline.atTime(23, 59, 59);
 
         long secondsLeft = now.until(endOfDay, ChronoUnit.SECONDS);
         if (secondsLeft <= 0) {
-            return "Deadline passed";
+            label.setText("Deadline passed");
+            label.setStyle(
+                    "-fx-font-family: 'Poppins';" +
+                            "-fx-font-size: 12;" +
+                            "-fx-text-fill: #e11d48;");
+            return;
         }
 
         long days = secondsLeft / (24 * 3600);
@@ -350,16 +464,13 @@ public class Dashboard extends javax.swing.JPanel {
         long minutes = (secondsLeft % 3600) / 60;
         long seconds = secondsLeft % 60;
 
-        return String.format("%dd %02dh %02dm %02ds", days, hours, minutes, seconds);
+        String text = String.format("%dd %02dh %02dm %02ds", days, hours, minutes, seconds);
+        label.setText(text);
     }
 
-    private void addNoTasksLabel(javax.swing.JPanel panel, String text) {
-        javax.swing.JLabel label = new javax.swing.JLabel(text);
-        label.setFont(new java.awt.Font("Poppins", 0, 16));
-        label.setForeground(new Color(120, 120, 120));
-        panel.add(label);
-    }
-
+    // ======================================================================
+    // Quotes
+    // ======================================================================
     private void loadQuotesFromJsonl() {
         try (InputStream inputStream = getClass().getResourceAsStream("/com/tracker/mvc/resources/quotes.jsonl")) {
             if (inputStream == null) {
@@ -380,36 +491,32 @@ public class Dashboard extends javax.swing.JPanel {
         }
     }
 
-    private String getRandomQuote() {
+    public String getPlainQuoteWithAuthor() {
         if (quotes.isEmpty()) {
             return "No quotes available";
         }
 
-        // Filter quotes that are 60 chars or less including double quotes if present
         List<String> shortQuotes = quotes.stream()
-                .filter(q -> q.length() <= 60)
+                .filter(q -> q.length() <= 80)
                 .collect(Collectors.toList());
 
         if (shortQuotes.isEmpty()) {
             return "No suitable quotes available";
         }
 
-        int index = new Random().nextInt(shortQuotes.size());
+        int index = random.nextInt(shortQuotes.size());
         String selectedQuote = shortQuotes.get(index);
 
-        // Optionally ensure the quote is wrapped with double quotes
-        if (!(selectedQuote.startsWith("\"") && selectedQuote.endsWith("\""))) {
-            selectedQuote = "\"" + selectedQuote + "\"";
-        }
-
-        // Use Georgia font, italic style, display as HTML
-        return "<html><span style='font-family:Georgia, serif; font-style: italic;'>" + selectedQuote
-                + "</span></html>";
+        // remove leading/trailing quotes if any
+        return selectedQuote.replaceAll("^\"|\"$", "");
     }
 
+    // ======================================================================
+    // Helpers
+    // ======================================================================
     private String getTimeBasedGreeting() {
         int hour = LocalDateTime.now().getHour();
-        if (hour >= 0 && hour < 12) { // 12 AM to before 12 PM
+        if (hour >= 0 && hour < 12) {
             return "Good morning";
         } else if (hour >= 12 && hour < 17) {
             return "Good afternoon";
@@ -420,9 +527,7 @@ public class Dashboard extends javax.swing.JPanel {
         }
     }
 
-    /**
-     * Public method to refresh dashboard when tasks change
-     */
+    // Refresh from outside
     public void refreshDashboard() {
         loadTasks();
     }
