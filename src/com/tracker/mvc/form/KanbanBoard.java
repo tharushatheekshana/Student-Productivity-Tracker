@@ -43,32 +43,35 @@ public class KanbanBoard extends javax.swing.JPanel {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout());
-        setBackground(new Color(245, 245, 245));
+        setLayout(new BorderLayout(20, 20));
+        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setOpaque(false); // Make main panel transparent
     }
 
     private void setupKanbanColumns() {
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 8));
-        headerPanel.setBackground(Color.WHITE);
+        // --- Header ---
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
 
         JLabel titleLabel = new JLabel("Kanban Board");
-        titleLabel.setFont(new Font("Poppins", Font.BOLD, 20));
-        titleLabel.setForeground(new Color(50, 50, 50));
+        titleLabel.setFont(new Font("Poppins", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(220, 220, 220)); // Light gray for dark theme
 
         JButton addTaskBtn = new JButton("+ Add Task");
-        addTaskBtn.setFont(new Font("Poppins", Font.PLAIN, 11));
+        addTaskBtn.setFont(new Font("Poppins", Font.BOLD, 12));
+        addTaskBtn.setBackground(new Color(0, 120, 215));
+        addTaskBtn.setForeground(Color.WHITE);
+        addTaskBtn.putClientProperty(FlatClientProperties.STYLE, "arc:10; borderWidth:0; focusWidth:0; innerFocusWidth:0");
         addTaskBtn.addActionListener(e -> showAddTaskDialog());
 
-        headerPanel.add(titleLabel);
-        headerPanel.add(Box.createHorizontalStrut(300));
-        headerPanel.add(addTaskBtn);
+        headerPanel.add(titleLabel, BorderLayout.WEST);
+        headerPanel.add(addTaskBtn, BorderLayout.EAST);
 
         add(headerPanel, BorderLayout.NORTH);
 
-        // Create main panel with 3 columns
-        JPanel columnsPanel = new JPanel(new GridLayout(1, 3, 10, 0));
-        columnsPanel.setBackground(new Color(245, 245, 245));
-        columnsPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        // --- Columns Container ---
+        JPanel columnsPanel = new JPanel(new GridLayout(1, 3, 20, 0)); // Increased gap
+        columnsPanel.setOpaque(false);
 
         // To-Do Column
         JPanel todoColumn = createColumn("To-Do", new Color(255, 193, 7));
@@ -98,36 +101,33 @@ public class KanbanBoard extends javax.swing.JPanel {
     }
 
     private JPanel createColumn(String title, Color headerColor) {
-        JPanel column = new JPanel(new BorderLayout());
-        column.setBackground(Color.WHITE);
-        column.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
+        JPanel column = new JPanel(new BorderLayout(0, 10));
+        // Rounded white column background
+        column.putClientProperty(FlatClientProperties.STYLE, "arc:20; background:#ffffff; border:1,1,1,1,#e5e5e5");
+        column.setBorder(new EmptyBorder(15, 15, 15, 15));
 
+        // Header label with color indicator
         JLabel headerLabel = new JLabel(title, SwingConstants.CENTER);
-        headerLabel.setFont(new Font("Poppins", Font.BOLD, 13));
-        headerLabel.setForeground(Color.WHITE);
-        headerLabel.setBackground(headerColor);
-        headerLabel.setOpaque(true);
-        headerLabel.setBorder(new EmptyBorder(8, 8, 8, 8));
-
+        headerLabel.setFont(new Font("Poppins", Font.BOLD, 16));
+        headerLabel.setForeground(Color.DARK_GRAY);
+        
         column.add(headerLabel, BorderLayout.NORTH);
         return column;
     }
 
     private JScrollPane createScrollPane(JPanel panel) {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(new Color(250, 250, 250));
-        panel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        panel.setOpaque(false); // Transparent to show column white background
 
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setBorder(null);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         scrollPane.getVerticalScrollBar().putClientProperty(FlatClientProperties.STYLE,
-                "trackArc:999;trackInsets:3,3,3,3;thumbInsets:3,3,3,3;background:$Table.background;width:8;");
-
-        // Set preferred size for scroll pane to ensure proper scrolling
-        scrollPane.setPreferredSize(new Dimension(250, 400));
+                "trackArc:999;trackInsets:3,3,3,3;thumbInsets:3,3,3,3;background:null;width:6;");
 
         return scrollPane;
     }
@@ -190,32 +190,33 @@ public class KanbanBoard extends javax.swing.JPanel {
                     }
                 }
 
-                JPanel taskCard = createTaskCard(task);
-
+                // Determine current status
                 String status = task.getStatus() != null ? task.getStatus() : "TODO";
+                
+                // Color strip based on status
+                Color stripColor;
                 switch (status) {
-                    case "TODO" ->
-                        todoPanel.add(taskCard);
-                    case "IN_PROGRESS" ->
-                        inProgressPanel.add(taskCard);
-                    case "DONE" ->
-                        donePanel.add(taskCard);
-                    default ->
-                        todoPanel.add(taskCard);
+                    case "TODO" -> stripColor = new Color(255, 193, 7);
+                    case "IN_PROGRESS" -> stripColor = new Color(33, 150, 243);
+                    case "DONE" -> stripColor = new Color(76, 175, 80);
+                    default -> stripColor = Color.GRAY;
                 }
-            }
 
-            // Add empty labels if no tasks
-            if (todoPanel.getComponentCount() == 0) {
-                todoPanel.add(createEmptyLabel());
-            }
-            if (inProgressPanel.getComponentCount() == 0) {
-                inProgressPanel.add(createEmptyLabel());
-            }
-            if (donePanel.getComponentCount() == 0) {
-                donePanel.add(createEmptyLabel());
-            }
+                JPanel taskCard = createTaskCard(task, stripColor);
 
+                switch (status) {
+                    case "TODO" -> todoPanel.add(taskCard);
+                    case "IN_PROGRESS" -> inProgressPanel.add(taskCard);
+                    case "DONE" -> donePanel.add(taskCard);
+                    default -> todoPanel.add(taskCard);
+                }
+                
+                // Add spacing
+                if (status.equals("TODO")) todoPanel.add(Box.createVerticalStrut(10));
+                if (status.equals("IN_PROGRESS")) inProgressPanel.add(Box.createVerticalStrut(10));
+                if (status.equals("DONE")) donePanel.add(Box.createVerticalStrut(10));
+            }
+            
             todoPanel.revalidate();
             todoPanel.repaint();
             inProgressPanel.revalidate();
@@ -228,75 +229,94 @@ public class KanbanBoard extends javax.swing.JPanel {
         }
     }
 
-    private JPanel createTaskCard(TaskDto task) {
-        JPanel card = new JPanel();
-        card.setLayout(new BorderLayout(5, 5));
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
-                new EmptyBorder(8, 8, 8, 8)));
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
-        card.setPreferredSize(new Dimension(200, 100));
-        card.setMinimumSize(new Dimension(180, 100));
-
-        // Subject
-        JLabel subjectLabel = new JLabel("<html><b>" + truncateText(task.getSubject(), 30) + "</b></html>");
-        subjectLabel.setFont(new Font("Poppins", Font.PLAIN, 12));
-        card.add(subjectLabel, BorderLayout.NORTH);
-
-        // Description
-        JLabel descLabel = new JLabel("<html>" + truncateText(task.getDescription(), 40) + "</html>");
-        descLabel.setFont(new Font("Poppins", Font.PLAIN, 10));
-        descLabel.setForeground(new Color(100, 100, 100));
-        card.add(descLabel, BorderLayout.CENTER);
-
-        // Deadline
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        bottomPanel.setBackground(Color.WHITE);
-        JLabel deadlineLabel = new JLabel("📅 " + task.getDeadline().format(DateTimeFormatter.ofPattern("MMM dd")));
-        deadlineLabel.setFont(new Font("Poppins", Font.PLAIN, 9));
-        deadlineLabel.setForeground(task.isOverdue() ? Color.RED : new Color(100, 100, 100));
-        bottomPanel.add(deadlineLabel);
-
-        // Delete button
-        JButton deleteBtn;
-        try {
-            // Try to load bin icon from resources (add your own icon as needed)
-            java.net.URL iconUrl = getClass().getResource("/com/tracker/mvc/icon/delete.png");
-            if (iconUrl != null) {
-                ImageIcon binIcon = new ImageIcon(iconUrl);
-                deleteBtn = new JButton(binIcon);
-            } else {
-                deleteBtn = new JButton("×");
-                deleteBtn.setFont(new Font("Arial", Font.BOLD, 14));
-                deleteBtn.setForeground(Color.RED);
+    private JPanel createTaskCard(TaskDto task, Color stripColor) {
+        // Main card panel
+        JPanel card = new JPanel(new BorderLayout(10, 0)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Shadow (subtle)
+                g2.setColor(new Color(220, 220, 220));
+                g2.fillRoundRect(2, 2, getWidth()-2, getHeight()-2, 15, 15);
+                
+                // Background
+                g2.setColor(Color.WHITE);
+                g2.fillRoundRect(0, 0, getWidth()-2, getHeight()-2, 15, 15);
+                
+                // Left Color Strip
+                g2.setColor(stripColor);
+                g2.fillRoundRect(0, 0, 6, getHeight()-2, 15, 15);
+                g2.fillRect(4, 0, 2, getHeight()-2); // Square off inner side
+                
+                g2.dispose();
+                super.paintComponent(g);
             }
-        } catch (Exception ex) {
-            deleteBtn = new JButton("×");
-            deleteBtn.setFont(new Font("Arial", Font.BOLD, 14));
+        };
+        
+        card.setOpaque(false);
+        card.setBorder(new EmptyBorder(10, 15, 10, 10)); // Left padding for strip
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
+        card.setPreferredSize(new Dimension(200, 90));
+        card.setMinimumSize(new Dimension(180, 90));
+
+        // Center: Subject & Description
+        JPanel centerPanel = new JPanel(new GridLayout(2, 1, 0, 2));
+        centerPanel.setOpaque(false);
+        
+        JLabel subjectLabel = new JLabel(task.getSubject());
+        subjectLabel.setFont(new Font("Poppins", Font.BOLD, 13));
+        subjectLabel.setForeground(new Color(50, 50, 50));
+        
+        String shortDesc = task.getDescription();
+        if(shortDesc != null && shortDesc.length() > 30) shortDesc = shortDesc.substring(0, 27) + "...";
+        JLabel descLabel = new JLabel(shortDesc);
+        descLabel.setFont(new Font("Poppins", Font.PLAIN, 11));
+        descLabel.setForeground(Color.GRAY);
+        
+        centerPanel.add(subjectLabel);
+        centerPanel.add(descLabel);
+        card.add(centerPanel, BorderLayout.CENTER);
+
+        // Bottom/Right: Date & Delete
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.setOpaque(false);
+        
+        // Delete Button (Top Right)
+        JButton deleteBtn = new JButton();
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource("/com/tracker/mvc/icon/delete.png"));
+            deleteBtn.setIcon(icon);
+        } catch (Exception e) {
+            deleteBtn.setText("×");
             deleteBtn.setForeground(Color.RED);
         }
-        deleteBtn.setBorderPainted(false);
+        deleteBtn.setBorder(null);
         deleteBtn.setContentAreaFilled(false);
         deleteBtn.setFocusPainted(false);
         deleteBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         deleteBtn.addActionListener(e -> deleteTask(task.getTaskId()));
-        bottomPanel.add(deleteBtn);
-
-        card.add(bottomPanel, BorderLayout.SOUTH);
+        
+        // Date Label (Bottom Right)
+        JLabel dateLabel = new JLabel(task.getDeadline().format(DateTimeFormatter.ofPattern("MMM dd")));
+        dateLabel.setFont(new Font("Poppins", Font.PLAIN, 10));
+        dateLabel.setForeground(Color.LIGHT_GRAY);
+        dateLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        
+        JPanel btnContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        btnContainer.setOpaque(false);
+        btnContainer.add(deleteBtn);
+        
+        rightPanel.add(btnContainer, BorderLayout.NORTH);
+        rightPanel.add(dateLabel, BorderLayout.SOUTH);
+        
+        card.add(rightPanel, BorderLayout.EAST);
 
         // Make card draggable
         makeDraggable(card, task.getTaskId());
 
         return card;
-    }
-
-    private String truncateText(String text, int maxLength) {
-        if (text == null)
-            return "";
-        if (text.length() <= maxLength)
-            return text;
-        return text.substring(0, maxLength) + "...";
     }
 
     private void makeDraggable(JPanel card, String taskId) {

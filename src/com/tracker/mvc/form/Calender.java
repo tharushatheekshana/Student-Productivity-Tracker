@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import javaswingdev.chart.ModelPieChart;
 import javaswingdev.chart.PieChart;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -64,8 +65,10 @@ public class Calender extends javax.swing.JPanel {
         }
 
         initComponents();
+        customizeCalendar();
+        
         this.setOpaque(false);
-
+        
         // Initial coloring & listeners
         refreshCalendar();
 
@@ -74,6 +77,33 @@ public class Calender extends javax.swing.JPanel {
 
         // Listen for year changes
         jCalendar1.getYearChooser().addPropertyChangeListener("year", evt -> refreshCalendar());
+    }
+    
+    private void customizeCalendar() {
+        setLayout(new BorderLayout(20, 20));
+        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // Remove default content and add header
+        removeAll();
+        
+        JLabel titleLabel = new JLabel("Study Calendar");
+        titleLabel.setFont(new Font("Poppins", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(220, 220, 220));
+        add(titleLabel, BorderLayout.NORTH);
+        
+        // Style JCalendar
+        jCalendar1.setDecorationBackgroundColor(new Color(240, 240, 240));
+        jCalendar1.setSundayForeground(new Color(255, 99, 71));
+        jCalendar1.setWeekdayForeground(Color.DARK_GRAY);
+        jCalendar1.setFont(new Font("Poppins", Font.PLAIN, 12));
+        
+        // Container for Calendar
+        JPanel calendarPanel = new JPanel(new BorderLayout());
+        calendarPanel.setOpaque(false); // or white with rounded corners if preferred
+        // calendarPanel.putClientProperty("FlatClientProperties.STYLE", "arc:20; background:#ffffff; border:1,1,1,1,#e5e5e5"); // If using FlatLaf styling on panel
+        
+        calendarPanel.add(jCalendar1, BorderLayout.CENTER);
+        add(calendarPanel, BorderLayout.CENTER);
     }
 
     @Override
@@ -266,59 +296,87 @@ public class Calender extends javax.swing.JPanel {
     // Create a modern, color-coded task card
     private JPanel createTaskCard(TaskDto task) {
         LocalDate today = LocalDate.now();
-        Color baseColor;
+        Color statusColor;
+        String statusText;
 
-        // Decide card color based on task status
         if (task.isCompleted()) {
-            baseColor = new Color(76, 175, 80); // green
+            statusColor = new Color(0, 180, 0); // Green
+            statusText = "COMPLETED";
         } else if (task.getDeadline().isBefore(today)) {
-            baseColor = new Color(244, 67, 54); // red
+            statusColor = new Color(220, 53, 69); // Red
+            statusText = "OVERDUE";
         } else if (task.getDeadline().equals(today)) {
-            baseColor = new Color(255, 152, 0); // orange
+            statusColor = new Color(255, 193, 7); // Yellow/Orange
+            statusText = "DUE TODAY";
         } else {
-            baseColor = new Color(255, 193, 7); // yellow
+            statusColor = new Color(0, 123, 255); // Blue
+            statusText = "UPCOMING";
         }
 
+        // Main card panel with custom painting for rounded background and shadow
         JPanel card = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                int arc = 20;
 
-                // subtle shadow
-                g2.setColor(new Color(0, 0, 0, 30));
-                g2.fillRoundRect(3, 3, getWidth() - 6, getHeight() - 6, arc, arc);
+                // Shadow
+                g2.setColor(new Color(200, 200, 200, 80));
+                g2.fillRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 15, 15);
 
-                // background color
-                g2.setColor(baseColor);
-                g2.fillRoundRect(0, 0, getWidth() - 6, getHeight() - 6, arc, arc);
+                // Background
+                g2.setColor(Color.WHITE);
+                g2.fillRoundRect(0, 0, getWidth() - 4, getHeight() - 4, 15, 15);
+                
+                // Status Strip (Left)
+                g2.setColor(statusColor);
+                g2.fillRoundRect(0, 0, 6, getHeight() - 4, 15, 15);
+                g2.fillRect(3, 0, 3, getHeight() - 4); // Square off right side of strip
 
                 g2.dispose();
+                super.paintComponent(g); // Allow children to paint
             }
         };
-
-        card.setPreferredSize(new Dimension(180, 120));
-        card.setLayout(new GridLayout(3, 1, 2, 2));
-        card.setBorder(new EmptyBorder(8, 8, 8, 8));
+        
         card.setOpaque(false);
+        card.setPreferredSize(new Dimension(320, 80));
+        card.setLayout(new BorderLayout(10, 0));
+        card.setBorder(new EmptyBorder(10, 18, 10, 10)); // Left padding to clear strip
 
-        JLabel title = new JLabel("<html><center>" + task.getSubject() + "</center></html>", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI Semibold", Font.BOLD, 12));
-        title.setForeground(Color.WHITE);
+        // --- Center: Subject & Description ---
+        JPanel centerPanel = new JPanel(new GridLayout(2, 1, 0, 2));
+        centerPanel.setOpaque(false);
+        
+        JLabel lblSubject = new JLabel(task.getSubject());
+        lblSubject.setFont(new Font("Poppins", Font.BOLD, 14));
+        lblSubject.setForeground(new Color(50, 50, 50));
+        
+        JLabel lblDesc = new JLabel(task.getDescription() != null ? task.getDescription() : "");
+        lblDesc.setFont(new Font("Poppins", Font.PLAIN, 11));
+        lblDesc.setForeground(Color.GRAY);
+        
+        centerPanel.add(lblSubject);
+        centerPanel.add(lblDesc);
+        
+        // --- Right: Date & Status ---
+        JPanel rightPanel = new JPanel(new GridLayout(2, 1, 0, 2));
+        rightPanel.setOpaque(false);
+        
+        JLabel lblDate = new JLabel(task.getDeadline().toString());
+        lblDate.setFont(new Font("Poppins", Font.BOLD, 12));
+        lblDate.setForeground(Color.DARK_GRAY);
+        lblDate.setHorizontalAlignment(SwingConstants.RIGHT);
+        
+        JLabel lblStatus = new JLabel(statusText);
+        lblStatus.setFont(new Font("Poppins", Font.BOLD, 10));
+        lblStatus.setForeground(statusColor);
+        lblStatus.setHorizontalAlignment(SwingConstants.RIGHT);
+        
+        rightPanel.add(lblDate);
+        rightPanel.add(lblStatus);
 
-        JLabel desc = new JLabel("<html><center>" + task.getDescription() + "</center></html>", SwingConstants.CENTER);
-        desc.setFont(new Font("Segoe UI", Font.PLAIN, 11));
-        desc.setForeground(new Color(255, 255, 255, 220));
-
-        JLabel deadline = new JLabel("<html><center>📅 " + task.getDeadline() + "</center></html>", SwingConstants.CENTER);
-        deadline.setFont(new Font("Segoe UI", Font.ITALIC, 11));
-        deadline.setForeground(new Color(255, 255, 255, 200));
-
-        card.add(title);
-        card.add(desc);
-        card.add(deadline);
+        card.add(centerPanel, BorderLayout.CENTER);
+        card.add(rightPanel, BorderLayout.EAST);
 
         return card;
     }

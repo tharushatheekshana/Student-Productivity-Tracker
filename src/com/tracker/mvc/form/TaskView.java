@@ -11,6 +11,7 @@ import com.tracker.mvc.dto.TaskDto;
 import com.tracker.mvc.event.TaskChangeListener;
 import com.tracker.mvc.swing.FadeLabel;
 import com.tracker.mvc.table.CheckBoxTableHeaderRenderer;
+import com.tracker.mvc.table.StatusCellRenderer;
 import com.tracker.mvc.table.TableHeaderAlignment;
 
 import java.awt.Color;
@@ -411,12 +412,13 @@ public class TaskView extends javax.swing.JPanel {
     }// GEN-LAST:event_cmdEditActionPerformed
 
     private void initCustomStyles() {
-
+        // Make the main view transparent to show dashboard gradient
+        setOpaque(false);
         panel.setOpaque(false);
 
         // Set selection color
-        table.setSelectionBackground(new java.awt.Color(0, 120, 215)); // blue
-        table.setSelectionForeground(java.awt.Color.WHITE);
+        table.setSelectionBackground(new java.awt.Color(240, 240, 240)); // very light gray
+        table.setSelectionForeground(java.awt.Color.BLACK);
 
         // Table header styling
         table.getTableHeader().putClientProperty(FlatClientProperties.STYLE, ""
@@ -427,9 +429,10 @@ public class TaskView extends javax.swing.JPanel {
                 + "font:bold;");
 
         table.putClientProperty(FlatClientProperties.STYLE, ""
-                + "rowHeight:30;"
+                + "rowHeight:40;" // Increased row height
                 + "showHorizontalLines:true;"
-                + "intercellSpacing:0,1;"
+                + "showVerticalLines:false;" // Remove vertical lines
+                + "intercellSpacing:0,10;" // Add spacing
                 + "cellFocusColor:$TableHeader.hoverBackground;"
                 + "selectionBackground:$TableHeader.hoverBackground;"
                 + "selectionForeground:$Table.foreground;");
@@ -443,8 +446,10 @@ public class TaskView extends javax.swing.JPanel {
         table.getColumnModel().getColumn(0).setHeaderRenderer(new CheckBoxTableHeaderRenderer(table, 0));
         table.getTableHeader().setDefaultRenderer(new TableHeaderAlignment(table));
 
+        lblSubject.setText("My Tasks");
+        lblSubject.setForeground(new Color(220, 220, 220)); // Light text for dark background
         lblSubject.putClientProperty(FlatClientProperties.STYLE, ""
-                + "font:bold +5;");
+                + "font:bold +10;");
 
         txtSearch.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search...");
         txtSearch.putClientProperty(
@@ -458,6 +463,14 @@ public class TaskView extends javax.swing.JPanel {
                 + "innerFocusWidth:0;"
                 + "margin:5,20,5,20;"
                 + "background:$Panel.background");
+
+        // Style buttons - cleaner, outline/minimal style
+        cmdNew.putClientProperty(FlatClientProperties.STYLE, "arc:10; font:bold;");
+        cmdEdit.putClientProperty(FlatClientProperties.STYLE, "arc:10; font:bold;");
+        
+        // Delete button with icon and red text
+        cmdDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/tracker/mvc/icon/delete.png")));
+        cmdDelete.putClientProperty(FlatClientProperties.STYLE, "arc:10; font:bold; foreground:#dc3545");
 
         loadTasksFromDB();
 
@@ -486,7 +499,7 @@ public class TaskView extends javax.swing.JPanel {
                     new String[] { "ID", "Select", "#", "Subject", "Description", "Deadline", "Overdue", "Complete" }) {
                 @Override
                 public Class<?> getColumnClass(int columnIndex) {
-                    if (columnIndex == 1) {
+                    if (columnIndex == 1 || columnIndex == 7) { // Select and Complete are Booleans
                         return Boolean.class;
                     }
                     return String.class;
@@ -497,6 +510,37 @@ public class TaskView extends javax.swing.JPanel {
                     return column == 1 || column == 7;
                 }
             };
+            
+            // Add a listener to handle "Complete" checkbox toggles immediately
+            model.addTableModelListener(e -> {
+                if (e.getType() == javax.swing.event.TableModelEvent.UPDATE && e.getColumn() == 7) {
+                    int row = e.getFirstRow();
+                    DefaultTableModel tm = (DefaultTableModel) e.getSource();
+                    String taskId = tm.getValueAt(row, 0).toString();
+                    Boolean isCompleted = (Boolean) tm.getValueAt(row, 7);
+                    
+                    try {
+                        if (taskController == null) {
+                             taskController = new TaskController();
+                        }
+                        TaskDto task = taskController.searchTask(taskId);
+                        if (task != null && task.isCompleted() != isCompleted) {
+                             task.setCompleted(isCompleted);
+                             taskController.updateTask(task);
+                             
+                             // Optional: Show feedback if marked complete
+                             if (isCompleted) {
+                                 showCompletionFeedback();
+                             }
+                             // We do NOT reload DB here to avoid losing selection or scroll position, 
+                             // but we might want to refresh if the list depends on completion status.
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            });
+
             int counter = 1;
             for (TaskDto task : tasks) {
                 model.addRow(new Object[] {
@@ -506,8 +550,8 @@ public class TaskView extends javax.swing.JPanel {
                         task.getSubject(),
                         task.getDescription(),
                         task.getDeadline().toString(),
-                        task.isOverdue() ? "Yes" : "No",
-                        task.isCompleted() ? "Completed" : "Complete"
+                        task.isOverdue() ? "Overdue" : "On Track", // clearer text
+                        task.isCompleted()
                 });
             }
             table.setModel(model);
@@ -516,95 +560,76 @@ public class TaskView extends javax.swing.JPanel {
             rowSorter = new TableRowSorter<>(model);
             table.setRowSorter(rowSorter);
 
-            // Setup column widths and header renderers as you have done
+            // Setup column widths
             table.getColumnModel().getColumn(0).setMinWidth(0);
             table.getColumnModel().getColumn(0).setMaxWidth(0);
+            
+            // Checkbox renderers are automatic for Boolean columns in JTable
             table.getColumnModel().getColumn(1).setHeaderRenderer(new CheckBoxTableHeaderRenderer(table, 1));
+            
+            // Color "Overdue" column
+            table.getColumnModel().getColumn(6).setCellRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+                @Override
+                public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                     java.awt.Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                     if (value != null && "Overdue".equals(value.toString())) {
+                         setForeground(java.awt.Color.RED);
+                         setFont(getFont().deriveFont(java.awt.Font.BOLD));
+                     } else {
+                         if (isSelected) {
+                             setForeground(table.getSelectionForeground());
+                         } else {
+                             setForeground(new java.awt.Color(0, 150, 0)); // Green for On Track
+                         }
+                     }
+                     return c;
+                }
+            });
+            
             table.getTableHeader().setDefaultRenderer(new TableHeaderAlignment(table));
 
-            addCompleteButtonListener();
+            // No need for addCompleteButtonListener() as we use a Boolean column now
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void addCompleteButtonListener() {
-        table.getColumn("Complete").setCellRenderer((tbl, value, isSelected, hasFocus, row, col) -> {
-            String text = value == null ? "" : value.toString();
-            javax.swing.JButton button = new javax.swing.JButton(text);
-            if (text.equals("Completed")) {
-                button.setEnabled(false);
-            } else {
-                button.setEnabled(true);
-            }
-            return button;
-        });
-        table.getColumn("Complete").setCellEditor(null);
+    private void showCompletionFeedback() {
+        // --- GlassPanePopup Feedback with thumbs-up emoji ---
+        JPanel feedbackPanel = new JPanel();
+        feedbackPanel.setOpaque(false);
+        feedbackPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0));
 
-        table.addMouseListener(new java.awt.event.MouseAdapter() {
+        JLabel iconLabel = new JLabel("\uD83D\uDC4D"); // Thumbs-up emoji
+        iconLabel.setFont(new java.awt.Font("Segoe UI Emoji", java.awt.Font.PLAIN, 32));
+        iconLabel.setForeground(new java.awt.Color(0, 150, 0));
+        iconLabel.setOpaque(false);
+        iconLabel.setVerticalAlignment(SwingConstants.CENTER);
+        iconLabel.setPreferredSize(new java.awt.Dimension(50, 50));
+
+        JLabel textLabel = new JLabel("Well done!");
+        textLabel.setOpaque(false);
+        textLabel.setFont(new java.awt.Font("Poppins", 1, 28));
+        textLabel.setForeground(new java.awt.Color(0, 150, 0));
+
+        feedbackPanel.add(iconLabel);
+        feedbackPanel.add(textLabel);
+
+        feedbackPanel.setBounds((getWidth() - 300) / 2, 50, 300, 50); // centered
+
+        DefaultOption option = new DefaultOption() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                int row = table.rowAtPoint(evt.getPoint());
-                int col = table.columnAtPoint(evt.getPoint());
-                if (row >= 0 && col == table.getColumn("Complete").getModelIndex()) {
-                    String taskId = table.getValueAt(row, 0).toString();
-                    try {
-                        if (taskController == null) {
-                            taskController = new TaskController();
-                        }
-                        TaskDto task = taskController.searchTask(taskId);
-
-                        if (!task.isCompleted()) {
-                            task.setCompleted(true);
-                            taskController.updateTask(task);
-
-                            // --- GlassPanePopup Feedback with thumbs-up emoji ---
-                            JPanel feedbackPanel = new JPanel();
-                            feedbackPanel.setOpaque(false);
-                            feedbackPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0));
-
-                            JLabel iconLabel = new JLabel("\uD83D\uDC4D"); // Thumbs-up emoji
-                            iconLabel.setFont(new java.awt.Font("Segoe UI Emoji", java.awt.Font.PLAIN, 32)); // Consider
-                                                                                                             // 28 or 32
-                            iconLabel.setForeground(new java.awt.Color(0, 150, 0));
-                            iconLabel.setOpaque(false);
-                            iconLabel.setVerticalAlignment(SwingConstants.CENTER); // Center vertically
-                            iconLabel.setPreferredSize(new java.awt.Dimension(50, 50)); // Give enough space for the
-                                                                                        // emoji
-
-                            JLabel textLabel = new JLabel("Well done!");
-                            textLabel.setOpaque(false);
-                            textLabel.setFont(new java.awt.Font("Poppins", 1, 28));
-                            textLabel.setForeground(new java.awt.Color(0, 150, 0));
-
-                            feedbackPanel.add(iconLabel);
-                            feedbackPanel.add(textLabel);
-
-                            feedbackPanel.setBounds((getWidth() - 300) / 2, 50, 300, 50); // centered
-
-                            DefaultOption option = new DefaultOption() {
-                                @Override
-                                public boolean closeWhenClickOutside() {
-                                    return true;
-                                }
-                            };
-
-                            GlassPanePopup.showPopup(new SimplePopupBorder(feedbackPanel, "", new String[] {}, null),
-                                    option);
-
-                            // Auto fade out after 1.5 seconds
-                            new javax.swing.Timer(1500, e -> GlassPanePopup.closePopup(feedbackPanel)).start();
-
-                            // Refresh table after marking complete
-                            loadTasksFromDB();
-                        }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
-                }
+            public boolean closeWhenClickOutside() {
+                return true;
             }
-        });
+        };
+
+        GlassPanePopup.showPopup(new SimplePopupBorder(feedbackPanel, "", new String[] {}, null),
+                option);
+
+        // Auto fade out after 1.5 seconds
+        new javax.swing.Timer(1500, e -> GlassPanePopup.closePopup(feedbackPanel)).start();
     }
 
     private void addSearchListener() {
