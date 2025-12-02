@@ -3,9 +3,18 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/view/FXPopupHelper.java</file>
-            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/view/DashboardView.java</file>
             <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/form/Dashboard.java</file>
+            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/view/DashboardView.java</file>
+            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/form/TaskView.java</file>
+            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/component/Card.java</file>
+            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/component/Menu.java</file>
+            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/form/Welcome.java</file>
+            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/form/Timetable.java</file>
+            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/form/Report.java</file>
+            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/form/KanbanBoard.java</file>
+            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/form/Create.java</file>
+            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/form/Calender.java</file>
+            <file>file:/D:/Downloads/New%20folder%20(5)/Student-Productivity-Tracker/src/com/tracker/mvc/swing/PanelBorder.java</file>
         </group>
     </open-files>
 </project-private>

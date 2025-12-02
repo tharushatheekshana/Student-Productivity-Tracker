@@ -123,37 +123,46 @@ public class Dashboard extends JPanel {
         return temp;
     }
 
-    // ======================================================================
+    // ====================================================================== 
     // JavaFX overlay (for FXPopupHelper)
-    // ======================================================================
+    // ====================================================================== 
     private void initOverlayJavaFX() {
         // Overlay popup logic removed
     }
 
-    // ======================================================================
+    // ====================================================================== 
     // Swing container (just hosts JavaFX board)
-    // ======================================================================
+    // ====================================================================== 
     private void initSwingUI() {
         setLayout(new BorderLayout());
         setOpaque(false); // Let paintComponent handle background
 
         JPanel centerCard = new JPanel(new BorderLayout());
-        centerCard.setOpaque(true);
+        centerCard.setOpaque(false); // Changed to false to match parent transparency
         centerCard.setBackground(new Color(0, 0, 0, 0));
-        centerCard.setBorder(javax.swing.BorderFactory.createEmptyBorder(24, 24, 24, 24));
+        // Reduced border from 24 to 10 to save space
+        centerCard.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JPanel fxContainer = new JPanel(new BorderLayout());
-        fxContainer.setOpaque(true);
-        fxContainer.setBackground(new Color(240, 244, 255)); // not pure white
+        fxContainer.setOpaque(false); // Make transparent to remove white artifacts
+        // fxContainer.setBackground(new Color(240, 244, 255)); // Removed light background
+        
+        // Removed FlatLaf style (border/shadow) that caused the white line
+        /*
         fxContainer.putClientProperty(FlatClientProperties.STYLE,
                 "arc:24; " +
                         "borderWidth:1; " +
                         "borderColor:#d3ddf3; " +
                         "background:$Panel.background; " +
                         "shadow:shadowHigh;");
+        */
 
         fxDashboardPanel = new JFXPanel();
-        fxDashboardPanel.setPreferredSize(new Dimension(0, 480));
+        // Remove rigid preferred size so it can shrink in small windows
+        // fxDashboardPanel.setPreferredSize(new Dimension(900, 600));
+        
+        // Explicitly allow shrinking to 0,0 so it fits in any container
+        fxDashboardPanel.setMinimumSize(new Dimension(0, 0));
 
         fxContainer.add(fxDashboardPanel, BorderLayout.CENTER);
         centerCard.add(fxContainer, BorderLayout.CENTER);
@@ -161,9 +170,9 @@ public class Dashboard extends JPanel {
         add(centerCard, BorderLayout.CENTER);
     }
 
-    // ======================================================================
+    // ====================================================================== 
     // JavaFX content: header card + task board (inside scroll)
-    // ======================================================================
+    // ====================================================================== 
     private void initDashboardJavaFX() {
         Platform.runLater(() -> {
             fxTodayTasksBox = new VBox(12);
@@ -280,20 +289,33 @@ public class Dashboard extends JPanel {
             VBox todayColumn = createColumn("Today Tasks", fxTodayTasksBox);
             VBox upcomingColumn = createColumn("Upcoming Tasks", fxUpcomingTasksBox);
 
-            todayColumn.setPrefWidth(380);
-            upcomingColumn.setPrefWidth(380);
+            // Make columns responsive to available width
+            // Reduced minWidth from 300 to 50 to allow shrinking in small windows
+            todayColumn.setMinWidth(50);
+            upcomingColumn.setMinWidth(50);
+            todayColumn.setMaxWidth(Double.MAX_VALUE);
+            upcomingColumn.setMaxWidth(Double.MAX_VALUE);
 
-            HBox columns = new HBox(24, todayColumn, upcomingColumn);
+            HBox.setHgrow(todayColumn, Priority.ALWAYS);
+            HBox.setHgrow(upcomingColumn, Priority.ALWAYS);
+
+            // Reduced spacing from 24 to 12
+            HBox columns = new HBox(12, todayColumn, upcomingColumn);
             columns.setAlignment(Pos.TOP_CENTER);
             columns.setFillHeight(true);
 
             // -------- Scroll content (header + columns) --------
             VBox content = new VBox(18, headerCard, columns);
-            content.setPadding(new Insets(18, 18, 18, 18));
+            // Reduced padding from 18 to 12
+            content.setPadding(new Insets(12, 12, 12, 12));
             content.setStyle("-fx-background-color: transparent;");
+            
+            // Allow columns to grow vertically to fill the scroll pane (if it's taller than content)
+            VBox.setVgrow(columns, Priority.ALWAYS);
 
             ScrollPane scroll = new ScrollPane(content);
             scroll.setFitToWidth(true);
+            scroll.setFitToHeight(true); // Fill height so columns stretch
             scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
             scroll.setStyle(
@@ -328,9 +350,9 @@ public class Dashboard extends JPanel {
         return column;
     }
 
-    // ======================================================================
+    // ====================================================================== 
     // Tasks
-    // ======================================================================
+    // ====================================================================== 
     public void loadTasks() {
         LocalDate today = LocalDate.now();
 
@@ -468,9 +490,9 @@ public class Dashboard extends JPanel {
         label.setText(text);
     }
 
-    // ======================================================================
+    // ====================================================================== 
     // Quotes
-    // ======================================================================
+    // ====================================================================== 
     private void loadQuotesFromJsonl() {
         try (InputStream inputStream = getClass().getResourceAsStream("/com/tracker/mvc/resources/quotes.jsonl")) {
             if (inputStream == null) {
@@ -511,9 +533,9 @@ public class Dashboard extends JPanel {
         return selectedQuote.replaceAll("^\"|\"$", "");
     }
 
-    // ======================================================================
+    // ====================================================================== 
     // Helpers
-    // ======================================================================
+    // ====================================================================== 
     private String getTimeBasedGreeting() {
         int hour = LocalDateTime.now().getHour();
         if (hour >= 0 && hour < 12) {
