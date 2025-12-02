@@ -50,21 +50,7 @@ import javafx.util.Duration;
 import org.json.JSONObject;
 
 public class Dashboard extends JPanel {
-    @Override
-    protected void paintComponent(java.awt.Graphics g) {
-        super.paintComponent(g);
-        java.awt.Graphics2D g2d = (java.awt.Graphics2D) g;
-        int w = getWidth();
-        int h = getHeight();
-        java.awt.GradientPaint gp = new java.awt.GradientPaint(
-                0, 0, Color.decode("#000000"), // top color
-                0, h, Color.decode("#434343") // bottom color
-        );
-
-        g2d.setPaint(gp);
-        g2d.fillRect(0, 0, w, h);
-    }
-
+    
     // -------- Data / controller --------
     private TaskController taskController;
     private final List<String> quotes = new ArrayList<>();
@@ -84,6 +70,8 @@ public class Dashboard extends JPanel {
     public Dashboard() {
         // FlatLaf theme defaults
         FlatLaf.registerCustomDefaultsSource("com.tracker.mvc.themes");
+        
+        setOpaque(false); // Transparent to show main gradient
 
         initSwingUI(); // Swing container (only center JFXPanel)
 
@@ -103,7 +91,6 @@ public class Dashboard extends JPanel {
         initDashboardJavaFX();
 
         loadTasks();
-        // showMotivationalPopupEveryStart();
     }
 
     // Public: for layered pane overlay
@@ -135,33 +122,16 @@ public class Dashboard extends JPanel {
     // ====================================================================== 
     private void initSwingUI() {
         setLayout(new BorderLayout());
-        setOpaque(false); // Let paintComponent handle background
-
+        
         JPanel centerCard = new JPanel(new BorderLayout());
-        centerCard.setOpaque(false); // Changed to false to match parent transparency
+        centerCard.setOpaque(false); 
         centerCard.setBackground(new Color(0, 0, 0, 0));
-        // Reduced border from 24 to 10 to save space
         centerCard.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         JPanel fxContainer = new JPanel(new BorderLayout());
-        fxContainer.setOpaque(false); // Make transparent to remove white artifacts
-        // fxContainer.setBackground(new Color(240, 244, 255)); // Removed light background
-        
-        // Removed FlatLaf style (border/shadow) that caused the white line
-        /*
-        fxContainer.putClientProperty(FlatClientProperties.STYLE,
-                "arc:24; " +
-                        "borderWidth:1; " +
-                        "borderColor:#d3ddf3; " +
-                        "background:$Panel.background; " +
-                        "shadow:shadowHigh;");
-        */
+        fxContainer.setOpaque(false); 
 
         fxDashboardPanel = new JFXPanel();
-        // Remove rigid preferred size so it can shrink in small windows
-        // fxDashboardPanel.setPreferredSize(new Dimension(900, 600));
-        
-        // Explicitly allow shrinking to 0,0 so it fits in any container
         fxDashboardPanel.setMinimumSize(new Dimension(0, 0));
 
         fxContainer.add(fxDashboardPanel, BorderLayout.CENTER);
@@ -177,42 +147,42 @@ public class Dashboard extends JPanel {
         Platform.runLater(() -> {
             fxTodayTasksBox = new VBox(12);
             fxUpcomingTasksBox = new VBox(12);
-            fxTodayTasksBox.setPadding(new Insets(4));
-            fxUpcomingTasksBox.setPadding(new Insets(4));
+            fxTodayTasksBox.setPadding(new Insets(8));
+            fxUpcomingTasksBox.setPadding(new Insets(8));
 
             // -------- Header card (greeting + quote) --------
             Label greetingLbl = new Label(greetingText);
             greetingLbl.setStyle(
                     "-fx-font-family: 'Poppins';" +
                             "-fx-font-weight: bold;" +
-                            "-fx-font-size: 22;" +
-                            "-fx-text-fill: #0F172A;" +
+                            "-fx-font-size: 24;" +
+                            "-fx-text-fill: #1e293b;" + // Dark slate
                             "-fx-wrap-text: false;");
             greetingLbl.setMaxWidth(Double.MAX_VALUE);
             greetingLbl.setMinWidth(Region.USE_PREF_SIZE);
 
-            // QUOTE (this will fade out)
+            // QUOTE
             Label quoteLbl = new Label("“" + dailyQuote + "”");
             quoteLbl.setWrapText(true);
-            quoteLbl.setMaxWidth(420);
+            quoteLbl.setMaxWidth(450);
             quoteLbl.setStyle(
                     "-fx-font-family: 'Georgia';" +
                             "-fx-font-style: italic;" +
-                            "-fx-font-size: 13;" +
-                            "-fx-text-fill: #475569;");
+                            "-fx-font-size: 14;" +
+                            "-fx-text-fill: #64748b;"); // Slate gray
 
-            // Reminders label (hidden initially, will cycle through reminders)
+            // Reminders label
             Label remindersLbl = new Label();
             remindersLbl.setWrapText(true);
-            remindersLbl.setMaxWidth(420);
+            remindersLbl.setMaxWidth(450);
             remindersLbl.setStyle(
                     "-fx-font-family: 'Poppins';" +
-                            "-fx-font-size: 13;" +
+                            "-fx-font-size: 14;" +
                             "-fx-text-fill: #e11d48;" +
                             "-fx-font-weight: bold;");
             remindersLbl.setVisible(false);
 
-            // Prepare reminders: today and tomorrow's tasks
+            // Prepare reminders
             List<String> reminders = new ArrayList<>();
             LocalDate today = LocalDate.now();
             LocalDate tomorrow = today.plusDays(1);
@@ -234,27 +204,25 @@ public class Dashboard extends JPanel {
                     } else {
                         when = "on " + task.getDeadline().toString();
                     }
-                    String reminderText = "“Your task '" + task.getSubject() + "' is due " + when
-                            + ". Don’t forget to complete it!”";
-                    reminders.add(reminderText);
+                    reminders.add("Reminder: '" + task.getSubject() + "' is due " + when + ".");
                 }
             }
             if (reminders.isEmpty()) {
-                reminders.add("No reminders");
+                reminders.add("No urgent reminders.");
             }
 
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
 
-            HBox headerRow = new HBox(18, greetingLbl, spacer, quoteLbl);
+            HBox headerRow = new HBox(20, greetingLbl, spacer, quoteLbl);
             headerRow.setAlignment(Pos.CENTER_LEFT);
 
-            // When quote fades out, show reminders in its place
-            FadeTransition fadeQuote = new FadeTransition(Duration.seconds(1.5), quoteLbl);
+            // Fade quote out
+            FadeTransition fadeQuote = new FadeTransition(Duration.seconds(1.0), quoteLbl);
             fadeQuote.setFromValue(1.0);
             fadeQuote.setToValue(0.0);
 
-            Timeline delayQuote = new Timeline(new KeyFrame(Duration.seconds(7), e -> fadeQuote.play()));
+            Timeline delayQuote = new Timeline(new KeyFrame(Duration.seconds(5), e -> fadeQuote.play()));
             delayQuote.play();
 
             fadeQuote.setOnFinished(e -> {
@@ -263,10 +231,9 @@ public class Dashboard extends JPanel {
                 remindersLbl.setVisible(true);
                 headerRow.getChildren().add(idx, remindersLbl);
 
-                // Cycle through reminders one by one every 3 seconds
                 final int[] reminderIndex = { 0 };
                 remindersLbl.setText(reminders.get(reminderIndex[0]));
-                Timeline reminderTimeline = new Timeline(new KeyFrame(Duration.seconds(3), ev -> {
+                Timeline reminderTimeline = new Timeline(new KeyFrame(Duration.seconds(4), ev -> {
                     reminderIndex[0] = (reminderIndex[0] + 1) % reminders.size();
                     remindersLbl.setText(reminders.get(reminderIndex[0]));
                 }));
@@ -274,60 +241,51 @@ public class Dashboard extends JPanel {
                 reminderTimeline.play();
             });
 
-            // Fluent gradient header card with color
+            // White Header Card - Fully White
             VBox headerCard = new VBox(headerRow);
-            headerCard.setPadding(new Insets(18, 24, 18, 24));
+            headerCard.setPadding(new Insets(20, 30, 20, 30));
             headerCard.setStyle(
-                    "-fx-background-radius: 22;" +
-                            "-fx-background-color: white;" +
-                            "-fx-effect: dropshadow(gaussian, rgba(15,23,42,0.15), 20, 0.0, 0, 8);");
-
-            // ---- QUOTE fades out after 7 seconds (greeting stays) ----
-            // (handled above, only one fadeQuote definition)
+                    "-fx-background-radius: 20;" +
+                            "-fx-background-color: #ffffff;" + // Fully white
+                            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 15, 0.0, 0, 5);");
 
             // -------- Task columns --------
             VBox todayColumn = createColumn("Today Tasks", fxTodayTasksBox);
             VBox upcomingColumn = createColumn("Upcoming Tasks", fxUpcomingTasksBox);
 
-            // Make columns responsive to available width
-            // Reduced minWidth from 300 to 50 to allow shrinking in small windows
-            todayColumn.setMinWidth(50);
-            upcomingColumn.setMinWidth(50);
-            todayColumn.setMaxWidth(Double.MAX_VALUE);
-            upcomingColumn.setMaxWidth(Double.MAX_VALUE);
-
+            todayColumn.setMinWidth(200);
+            upcomingColumn.setMinWidth(200);
             HBox.setHgrow(todayColumn, Priority.ALWAYS);
             HBox.setHgrow(upcomingColumn, Priority.ALWAYS);
 
-            // Reduced spacing from 24 to 12
-            HBox columns = new HBox(12, todayColumn, upcomingColumn);
+            HBox columns = new HBox(20, todayColumn, upcomingColumn);
             columns.setAlignment(Pos.TOP_CENTER);
             columns.setFillHeight(true);
 
-            // -------- Scroll content (header + columns) --------
-            VBox content = new VBox(18, headerCard, columns);
-            // Reduced padding from 18 to 12
-            content.setPadding(new Insets(12, 12, 12, 12));
+            VBox content = new VBox(20, headerCard, columns);
+            content.setPadding(new Insets(10));
             content.setStyle("-fx-background-color: transparent;");
             
-            // Allow columns to grow vertically to fill the scroll pane (if it's taller than content)
             VBox.setVgrow(columns, Priority.ALWAYS);
 
             ScrollPane scroll = new ScrollPane(content);
             scroll.setFitToWidth(true);
-            scroll.setFitToHeight(true); // Fill height so columns stretch
+            scroll.setFitToHeight(true);
             scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
             scroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+            
+            // Dark gradient background for the scroll pane area
             scroll.setStyle(
                     "-fx-background: linear-gradient(to bottom, #000000, #434343); " +
-                            "-fx-background-color: linear-gradient(to bottom, #000000, #434343); " +
-                            "-fx-background-insets: 0;");
+                    "-fx-background-color: linear-gradient(to bottom, #000000, #434343); " +
+                    "-fx-padding: 0;");
 
             BorderPane root = new BorderPane(scroll);
             root.setPadding(new Insets(0));
-            root.setStyle("-fx-background-color: linear-gradient(to bottom, #000000, #434343);"); // Match sidebar
+            root.setStyle("-fx-background-color: linear-gradient(to bottom, #000000, #434343);"); 
 
             Scene scene = new Scene(root);
+            scene.setFill(null); // Important for JFXPanel transparency
             fxDashboardPanel.setScene(scene);
         });
     }
@@ -338,15 +296,15 @@ public class Dashboard extends JPanel {
                 "-fx-font-family: 'Poppins';" +
                         "-fx-font-weight: bold;" +
                         "-fx-font-size: 18;" +
-                        "-fx-text-fill: #111827;");
+                        "-fx-text-fill: #1e293b;"); // Dark text for white bg
 
-        VBox column = new VBox(12, titleLbl, contentBox);
-        column.setPadding(new Insets(16));
+        VBox column = new VBox(15, titleLbl, contentBox);
+        column.setPadding(new Insets(20));
+        // White background
         column.setStyle(
-                // softer bluish column card, not harsh white
-                "-fx-background-color: rgba(247,249,255,0.92);" +
-                        "-fx-background-radius: 24;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(15,23,42,0.14), 18, 0.0, 0, 8);");
+                "-fx-background-color: #ffffff;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 10, 0.0, 0, 3);");
         return column;
     }
 
@@ -384,10 +342,10 @@ public class Dashboard extends JPanel {
 
                 if (task.getDeadline().equals(today)) {
                     hasTodayTasks = true;
-                    fxTodayTasksBox.getChildren().add(createFxCardForTask(task));
+                    fxTodayTasksBox.getChildren().add(createFxCardForTask(task, true));
                 } else if (task.getDeadline().isAfter(today)) {
                     hasUpcomingTasks = true;
-                    fxUpcomingTasksBox.getChildren().add(createFxCardForTask(task));
+                    fxUpcomingTasksBox.getChildren().add(createFxCardForTask(task, false));
                 }
             }
 
@@ -400,7 +358,7 @@ public class Dashboard extends JPanel {
         });
     }
 
-    private VBox createFxCardForTask(TaskDto task) {
+    private VBox createFxCardForTask(TaskDto task, boolean isToday) {
         String subject = (task.getSubject() == null || task.getSubject().isBlank())
                 ? "(No subject)"
                 : task.getSubject();
@@ -410,26 +368,28 @@ public class Dashboard extends JPanel {
                 "-fx-font-family: 'Poppins';" +
                         "-fx-font-weight: bold;" +
                         "-fx-font-size: 15;" +
-                        "-fx-text-fill: #111827;");
+                        "-fx-text-fill: #1e293b;");
 
         Label descriptionLbl = new Label(task.getDescription() == null ? "" : task.getDescription());
         descriptionLbl.setWrapText(true);
         descriptionLbl.setStyle(
                 "-fx-font-family: 'Poppins';" +
-                        "-fx-font-size: 13;" +
-                        "-fx-text-fill: #4b5563;");
+                        "-fx-font-size: 12;" +
+                        "-fx-text-fill: #64748b;");
 
         Label deadlineLbl = new Label("Due: " + task.getDeadline());
         deadlineLbl.setStyle(
                 "-fx-font-family: 'Poppins';" +
-                        "-fx-font-size: 12;" +
-                        "-fx-text-fill: #9ca3af;");
+                        "-fx-font-size: 11;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-fill: #94a3b8;");
 
         Label countdownLbl = new Label();
         countdownLbl.setStyle(
                 "-fx-font-family: 'Poppins';" +
-                        "-fx-font-size: 12;" +
-                        "-fx-text-fill: #0a84ff;");
+                        "-fx-font-size: 11;" +
+                        "-fx-font-weight: bold;" +
+                        "-fx-text-fill: " + (isToday ? "#e11d48;" : "#0ea5e9;") + ";"); // Red for today, blue for upcoming
 
         updateCountdownLabel(countdownLbl, task.getDeadline());
         Timeline timeline = new Timeline(
@@ -437,18 +397,24 @@ public class Dashboard extends JPanel {
                 new KeyFrame(Duration.seconds(1)));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
+        
+        HBox metaRow = new HBox(10, deadlineLbl, new Region(), countdownLbl);
+        HBox.setHgrow(metaRow.getChildren().get(1), Priority.ALWAYS);
 
-        VBox card = new VBox(6, subjectLbl, descriptionLbl, deadlineLbl, countdownLbl);
-        card.setPadding(new Insets(12, 14, 12, 14));
+        VBox card = new VBox(8, subjectLbl, descriptionLbl, metaRow);
+        card.setPadding(new Insets(15));
         card.setMinWidth(0);
         card.setMaxWidth(Double.MAX_VALUE);
+        
+        // Left border color based on urgency
+        String borderColor = isToday ? "#e11d48" : "#0ea5e9";
+        
         card.setStyle(
-                // softer bluish task card, not pure white
-                "-fx-background-color: #FAFCFF;" +
-                        "-fx-background-radius: 18;" +
-                        "-fx-border-color: rgba(148,163,184,0.35);" +
-                        "-fx-border-radius: 18;" +
-                        "-fx-effect: dropshadow(gaussian, rgba(15,23,42,0.12), 12, 0.0, 0, 4);");
+                "-fx-background-color: white;" +
+                        "-fx-background-radius: 10;" +
+                        "-fx-border-color: " + borderColor + ";" +
+                        "-fx-border-width: 0 0 0 4;" + // Left border only
+                        "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0.0, 0, 2);");
 
         return card;
     }
@@ -458,7 +424,8 @@ public class Dashboard extends JPanel {
         label.setStyle(
                 "-fx-font-family: 'Poppins';" +
                         "-fx-font-size: 13;" +
-                        "-fx-text-fill: #9ca3af;");
+                        "-fx-text-fill: #94a3b8;");
+        label.setPadding(new Insets(10));
         return label;
     }
 
@@ -473,20 +440,18 @@ public class Dashboard extends JPanel {
 
         long secondsLeft = now.until(endOfDay, ChronoUnit.SECONDS);
         if (secondsLeft <= 0) {
-            label.setText("Deadline passed");
-            label.setStyle(
-                    "-fx-font-family: 'Poppins';" +
-                            "-fx-font-size: 12;" +
-                            "-fx-text-fill: #e11d48;");
+            label.setText("Passed");
             return;
         }
 
         long days = secondsLeft / (24 * 3600);
         long hours = (secondsLeft % (24 * 3600)) / 3600;
         long minutes = (secondsLeft % 3600) / 60;
-        long seconds = secondsLeft % 60;
 
-        String text = String.format("%dd %02dh %02dm %02ds", days, hours, minutes, seconds);
+        String text;
+        if (days > 0) text = days + "d left";
+        else text = hours + "h " + minutes + "m left";
+        
         label.setText(text);
     }
 
@@ -496,7 +461,6 @@ public class Dashboard extends JPanel {
     private void loadQuotesFromJsonl() {
         try (InputStream inputStream = getClass().getResourceAsStream("/com/tracker/mvc/resources/quotes.jsonl")) {
             if (inputStream == null) {
-                System.err.println("quotes.jsonl resource not found.");
                 return;
             }
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
