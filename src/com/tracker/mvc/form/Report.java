@@ -16,7 +16,9 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import javaswingdev.chart.ModelPieChart;
 import javaswingdev.chart.PieChart;
@@ -44,7 +46,8 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
  */
 public class Report extends javax.swing.JPanel {
 
-    private PieChart weeklyChart;
+    private PieChart monthlyChart;
+    private PieChart weeklyChart; // New Weekly Chart
     private TaskController taskController;
     private PieChart productivityChart;
     
@@ -65,7 +68,8 @@ public class Report extends javax.swing.JPanel {
 
         initComponents();        
         jComboBox1.addActionListener(e -> loadTasksAndUpdateChart());
-        setupWeeklyChart();      
+        setupMonthlyChart();
+        setupWeeklyChart(); // Setup Weekly
         setupProductivityChart();
 
         int currentMonth = LocalDate.now().getMonthValue();
@@ -134,19 +138,23 @@ public class Report extends javax.swing.JPanel {
         contentPanel.add(Box.createVerticalStrut(20));
 
         // 2. Charts Row
-        JPanel chartsRow = new JPanel(new GridLayout(1, 2, 20, 0));
+        // Changed to 3 columns to accommodate Weekly Chart
+        JPanel chartsRow = new JPanel(new GridLayout(1, 3, 20, 0));
         chartsRow.setOpaque(false);
 
         // Wrap charts in styled cards
         chartContainer = new JPanel(new BorderLayout());
+        chartContainerWeekly = new JPanel(new BorderLayout()); // New Container
         chartContainer1 = new JPanel(new BorderLayout());
         
         // We wrap the chartContainers in Cards to give them the white look
-        JPanel chartCard1 = createChartCard("Weekly Progress", chartContainer);
+        JPanel chartCard1 = createChartCard("Monthly Progress", chartContainer);
+        JPanel chartCardWeekly = createChartCard("Weekly Progress", chartContainerWeekly); // New Card
         JPanel chartCard2 = createChartCard("Productivity", chartContainer1);
 
-        chartsRow.add(chartCard1);
-        chartsRow.add(chartCard2);
+        chartsRow.add(chartCardWeekly); // Add Weekly
+        chartsRow.add(chartCard1);      // Add Monthly
+        chartsRow.add(chartCard2);      // Add Productivity
 
         contentPanel.add(chartsRow);
 
@@ -190,25 +198,31 @@ public class Report extends javax.swing.JPanel {
     // Variables declaration 
     private javax.swing.JButton btnExport;
     private javax.swing.JPanel chartContainer;
+    private javax.swing.JPanel chartContainerWeekly; // New variable
     private javax.swing.JPanel chartContainer1;
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1; // Unused now
     private javax.swing.JLabel jLabel2; // Unused now
     // End of variables declaration
 
-//    private void setupWeeklyChart() {
-//        weeklyChart = new PieChart();
-//        weeklyChart.setChartType(PieChart.PeiChartType.DONUT_CHART);
-//        chartContainer.add(weeklyChart, BorderLayout.CENTER);
+//    private void setupMonthlyChart() {
+//        monthlyChart = new PieChart();
+//        monthlyChart.setChartType(PieChart.PeiChartType.DONUT_CHART);
+//        chartContainer.add(monthlyChart, BorderLayout.CENTER);
 //        chartContainer.revalidate();
 //        chartContainer.repaint();
 //    }
     // ---- Chart setup ----
+    private void setupMonthlyChart() {
+        monthlyChart = new PieChart();
+        monthlyChart.setChartType(PieChart.PeiChartType.DONUT_CHART);
+        chartContainer.add(monthlyChart, BorderLayout.CENTER);
+    }
+    
     private void setupWeeklyChart() {
         weeklyChart = new PieChart();
         weeklyChart.setChartType(PieChart.PeiChartType.DONUT_CHART);
-        chartContainer.add(weeklyChart, BorderLayout.CENTER);
-
+        chartContainerWeekly.add(weeklyChart, BorderLayout.CENTER);
     }
 
     private void setupProductivityChart() {
@@ -224,34 +238,59 @@ public class Report extends javax.swing.JPanel {
 
             // Get selected month (0-based index from JComboBox)
             int selectedMonth = jComboBox1.getSelectedIndex() + 1; // Jan=1, Feb=2...
-
-            int completed = 0;
-            int overdue = 0;
-            int upcoming = 0;
-            int totalInMonth = 0;
             LocalDate today = LocalDate.now();
 
+            // Weekly stats variables
+            int wCompleted = 0;
+            int wOverdue = 0;
+            int wUpcoming = 0;
+            
+            // Determine start and end of the current week (Monday to Sunday)
+            LocalDate startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            LocalDate endOfWeek = today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SUNDAY));
+
+            // Monthly stats variables
+            int mCompleted = 0;
+            int mOverdue = 0;
+            int mUpcoming = 0;
+            int totalInMonth = 0;
+
             for (TaskDto task : tasks) {
-                // Only include tasks in the selected month
-                if (task.getDeadline().getMonthValue() == selectedMonth) {
+                LocalDate dl = task.getDeadline();
+                if (dl == null) continue;
+
+                // Monthly Logic
+                if (dl.getMonthValue() == selectedMonth) {
                     totalInMonth++;
                     if (task.isCompleted()) {
-                        completed++;
-                    } else if (task.getDeadline().isBefore(today)) {
-                        overdue++;
+                        mCompleted++;
+                    } else if (dl.isBefore(today)) {
+                        mOverdue++;
                     } else {
-                        upcoming++;
+                        mUpcoming++;
+                    }
+                }
+                
+                // Weekly Logic (Check if deadline is within current week)
+                if (!dl.isBefore(startOfWeek) && !dl.isAfter(endOfWeek)) {
+                    if (task.isCompleted()) {
+                        wCompleted++;
+                    } else if (dl.isBefore(today)) {
+                        wOverdue++;
+                    } else {
+                        wUpcoming++;
                     }
                 }
             }
             
             // Update Summary Labels
             if (lblTotalTasksVal != null) lblTotalTasksVal.setText(String.valueOf(totalInMonth));
-            if (lblCompletedVal != null) lblCompletedVal.setText(String.valueOf(completed));
-            if (lblOverdueVal != null) lblOverdueVal.setText(String.valueOf(overdue));
+            if (lblCompletedVal != null) lblCompletedVal.setText(String.valueOf(mCompleted));
+            if (lblOverdueVal != null) lblOverdueVal.setText(String.valueOf(mOverdue));
 
-            updateWeeklyChart(completed, overdue, upcoming);
-            updateProductivityChart(completed, totalInMonth);
+            updateMonthlyChart(mCompleted, mOverdue, mUpcoming);
+            updateWeeklyChart(wCompleted, wOverdue, wUpcoming);
+            updateProductivityChart(mCompleted, totalInMonth);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -259,6 +298,26 @@ public class Report extends javax.swing.JPanel {
         }
     }
 
+    private void updateMonthlyChart(int completed, int overdue, int upcoming) {
+        monthlyChart.clearData();
+
+        if (completed > 0) {
+            monthlyChart.addData(new ModelPieChart("Completed", completed, new Color(144, 238, 144)));
+        }
+        if (overdue > 0) {
+            monthlyChart.addData(new ModelPieChart("Overdue", overdue, new Color(255, 99, 71)));
+        }
+        if (upcoming > 0) {
+            monthlyChart.addData(new ModelPieChart("Upcoming", upcoming, new Color(255, 215, 0)));
+        }
+
+        if (completed == 0 && overdue == 0 && upcoming == 0) {
+            monthlyChart.addData(new ModelPieChart("No Tasks", 1, Color.LIGHT_GRAY));
+        }
+
+        monthlyChart.repaint();
+    }
+    
     private void updateWeeklyChart(int completed, int overdue, int upcoming) {
         weeklyChart.clearData();
 
@@ -296,7 +355,7 @@ public class Report extends javax.swing.JPanel {
         try {
             javax.swing.JFileChooser fileChooser = new javax.swing.JFileChooser();
             fileChooser.setDialogTitle("Save Report As");
-            fileChooser.setSelectedFile(new File("WeeklyReport.pdf"));
+            fileChooser.setSelectedFile(new File("MonthlyReport.pdf"));
 
             int userSelection = fileChooser.showSaveDialog(this);
             if (userSelection != javax.swing.JFileChooser.APPROVE_OPTION) {
@@ -325,7 +384,7 @@ public class Report extends javax.swing.JPanel {
             contentStream.beginText();
             contentStream.setFont(poppinsBold, 18);
             contentStream.newLineAtOffset(50, 780);
-            contentStream.showText("Weekly Tasks Report");
+            contentStream.showText("Monthly Tasks Report");
             contentStream.endText();
 
             // 4️⃣ Month info
@@ -342,7 +401,7 @@ public class Report extends javax.swing.JPanel {
             contentStream.beginText();
             contentStream.setFont(poppinsBold, 14);
             contentStream.newLineAtOffset(50, chartY + 10);
-            contentStream.showText("Weekly Progress");
+            contentStream.showText("Monthly Progress");
             contentStream.endText();
 
             contentStream.beginText();
@@ -361,16 +420,16 @@ public class Report extends javax.swing.JPanel {
             contentStream.drawImage(pdfImg1, 50, chartY - chart1Image.getHeight() * scale,
                     chart1Image.getWidth() * scale, chart1Image.getHeight() * scale);
 
-            // ---- Weekly chart legend ----
-            String[] weeklyLabels = {"Completed ", "Overdue", "Upcoming"};
-            Color[] weeklyColors = {new Color(144, 238, 144), new Color(255, 99, 71), new Color(255, 215, 0)};
+            // ---- Monthly chart legend ----
+            String[] monthlyLabels = {"Completed ", "Overdue", "Upcoming"};
+            Color[] monthlyColors = {new Color(144, 238, 144), new Color(255, 99, 71), new Color(255, 215, 0)};
             float legendX = 50;
             float legendY = chartY - chart1Image.getHeight() * scale - 20;
             float squareSize = 10;
             float spacing = 70;
 
-            for (int i = 0; i < weeklyLabels.length; i++) {
-                contentStream.setNonStrokingColor(weeklyColors[i]);
+            for (int i = 0; i < monthlyLabels.length; i++) {
+                contentStream.setNonStrokingColor(monthlyColors[i]);
                 contentStream.addRect(legendX, legendY, squareSize, squareSize);
                 contentStream.fill();
 
@@ -378,7 +437,7 @@ public class Report extends javax.swing.JPanel {
                 contentStream.setFont(poppinsRegular, 10);
                 contentStream.setNonStrokingColor(Color.BLACK);
                 contentStream.newLineAtOffset(legendX + squareSize + 3, legendY);
-                contentStream.showText(weeklyLabels[i]);
+                contentStream.showText(monthlyLabels[i]);
                 contentStream.endText();
 
                 legendX += spacing;

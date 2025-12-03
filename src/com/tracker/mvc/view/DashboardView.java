@@ -133,6 +133,7 @@ public class DashboardView extends javax.swing.JFrame {
         kanbanBoard.setTaskChangeListener(() -> {
             try {
                 dashboardForm.refreshDashboard();
+                form1.refreshTaskTable(); // Update Task Table
             } catch (Exception e) {
                 e.printStackTrace();
                 System.err.println("Error refreshing from kanban: " + e.getMessage());

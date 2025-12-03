@@ -526,14 +526,23 @@ public class TaskView extends javax.swing.JPanel {
                         TaskDto task = taskController.searchTask(taskId);
                         if (task != null && task.isCompleted() != isCompleted) {
                              task.setCompleted(isCompleted);
+                             
+                             // Sync status for Kanban board
+                             if (isCompleted) {
+                                 task.setStatus("DONE");
+                             } else if ("DONE".equals(task.getStatus())) {
+                                 task.setStatus("TODO"); // Revert to TODO if unchecked
+                             }
+
                              taskController.updateTask(task);
                              
                              // Optional: Show feedback if marked complete
                              if (isCompleted) {
                                  showCompletionFeedback();
                              }
-                             // We do NOT reload DB here to avoid losing selection or scroll position, 
-                             // but we might want to refresh if the list depends on completion status.
+                             
+                             // Notify other views (Kanban, Dashboard) to refresh immediately
+                             notifyTaskChanged();
                         }
                     } catch (Exception ex) {
                         ex.printStackTrace();
@@ -695,6 +704,10 @@ public class TaskView extends javax.swing.JPanel {
      */
     public void setTaskChangeListener(TaskChangeListener listener) {
         this.taskChangeListener = listener;
+    }
+
+    public void refreshTaskTable() {
+        loadTasksFromDB();
     }
 
     /**

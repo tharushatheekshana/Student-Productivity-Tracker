@@ -66,6 +66,12 @@ public class Dashboard extends JPanel {
     // -------- JavaFX task containers --------
     private VBox fxTodayTasksBox;
     private VBox fxUpcomingTasksBox;
+    
+    // -------- Header UI elements --------
+    private Label remindersLbl;
+    private Timeline reminderTimeline;
+    private List<String> currentReminders = new ArrayList<>();
+    private int currentReminderIndex = 0;
 
     public Dashboard() {
         // FlatLaf theme defaults
@@ -171,8 +177,8 @@ public class Dashboard extends JPanel {
                             "-fx-font-size: 14;" +
                             "-fx-text-fill: #64748b;"); // Slate gray
 
-            // Reminders label
-            Label remindersLbl = new Label();
+            // Reminders label (Class Field now)
+            remindersLbl = new Label();
             remindersLbl.setWrapText(true);
             remindersLbl.setMaxWidth(450);
             remindersLbl.setStyle(
@@ -182,34 +188,8 @@ public class Dashboard extends JPanel {
                             "-fx-font-weight: bold;");
             remindersLbl.setVisible(false);
 
-            // Prepare reminders
-            List<String> reminders = new ArrayList<>();
-            LocalDate today = LocalDate.now();
-            LocalDate tomorrow = today.plusDays(1);
-            ArrayList<TaskDto> allTasks = new ArrayList<>();
-            try {
-                if (taskController != null) {
-                    allTasks = taskController.getAllTasks();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            for (TaskDto task : allTasks) {
-                if (task.getDeadline() != null && !task.getDeadline().isBefore(today)) {
-                    String when;
-                    if (task.getDeadline().equals(today)) {
-                        when = "today";
-                    } else if (task.getDeadline().equals(tomorrow)) {
-                        when = "tomorrow";
-                    } else {
-                        when = "on " + task.getDeadline().toString();
-                    }
-                    reminders.add("Reminder: '" + task.getSubject() + "' is due " + when + ".");
-                }
-            }
-            if (reminders.isEmpty()) {
-                reminders.add("No urgent reminders.");
-            }
+            // Initial population of reminders
+            updateHeaderReminders();
 
             Region spacer = new Region();
             HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -231,11 +211,15 @@ public class Dashboard extends JPanel {
                 remindersLbl.setVisible(true);
                 headerRow.getChildren().add(idx, remindersLbl);
 
-                final int[] reminderIndex = { 0 };
-                remindersLbl.setText(reminders.get(reminderIndex[0]));
-                Timeline reminderTimeline = new Timeline(new KeyFrame(Duration.seconds(4), ev -> {
-                    reminderIndex[0] = (reminderIndex[0] + 1) % reminders.size();
-                    remindersLbl.setText(reminders.get(reminderIndex[0]));
+                // Start cycling reminders
+                if (!currentReminders.isEmpty()) {
+                    remindersLbl.setText(currentReminders.get(0));
+                }
+                
+                reminderTimeline = new Timeline(new KeyFrame(Duration.seconds(4), ev -> {
+                    if (currentReminders.isEmpty()) return;
+                    currentReminderIndex = (currentReminderIndex + 1) % currentReminders.size();
+                    remindersLbl.setText(currentReminders.get(currentReminderIndex));
                 }));
                 reminderTimeline.setCycleCount(Timeline.INDEFINITE);
                 reminderTimeline.play();
@@ -289,6 +273,55 @@ public class Dashboard extends JPanel {
             fxDashboardPanel.setScene(scene);
         });
     }
+    
+    private void updateHeaderReminders() {
+        // This should run on FX thread if modifying UI directly, 
+        // but here we are modifying a list that UI reads from.
+        // For safety, let's do list modification on main thread or ensure FX reads it safely.
+        // Actually, it's better to update the list and then update text if visible.
+        
+        List<String> newReminders = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        LocalDate tomorrow = today.plusDays(1);
+        ArrayList<TaskDto> allTasks = new ArrayList<>();
+        
+        try {
+            if (taskController != null) {
+                allTasks = taskController.getAllTasks();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        for (TaskDto task : allTasks) {
+            // Skip completed tasks for reminders
+            if (task.isCompleted()) continue; 
+            
+            if (task.getDeadline() != null) {
+                boolean isToday = task.getDeadline().equals(today);
+                boolean isTomorrow = task.getDeadline().equals(tomorrow);
+
+                if (isToday || isTomorrow) {
+                    String when = isToday ? "today" : "tomorrow";
+                    newReminders.add("Reminder: '" + task.getSubject() + "' is due " + when + ".");
+                }
+            }
+        }
+        
+        if (newReminders.isEmpty()) {
+            newReminders.add("No urgent reminders.");
+        }
+        
+        // Update the class-level list safely
+        // If we are on FX thread, just swap. If not, runLater.
+        Platform.runLater(() -> {
+            currentReminders = newReminders;
+            currentReminderIndex = 0;
+            if (remindersLbl != null && remindersLbl.isVisible() && !currentReminders.isEmpty()) {
+                remindersLbl.setText(currentReminders.get(0));
+            }
+        });
+    }
 
     private VBox createColumn(String title, VBox contentBox) {
         Label titleLbl = new Label(title);
@@ -337,6 +370,10 @@ public class Dashboard extends JPanel {
             boolean hasUpcomingTasks = false;
 
             for (TaskDto task : tasksCopy) {
+                // Skip completed tasks in columns if desired, or keep them. 
+                // Usually dashboard shows pending tasks.
+                if (task.isCompleted()) continue;
+
                 if (task.getDeadline() == null)
                     continue;
 
@@ -516,5 +553,6 @@ public class Dashboard extends JPanel {
     // Refresh from outside
     public void refreshDashboard() {
         loadTasks();
+        updateHeaderReminders();
     }
 }
