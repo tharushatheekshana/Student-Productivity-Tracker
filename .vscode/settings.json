@@ -1,17 +1,26 @@
 {
-    "java.project.referencedLibraries": [
-        "lib/**/*.jar",
-        "src/com/tracker/mvc/lib/flatlaf-3.6.jar",
-        "src/com/tracker/mvc/lib/flatlaf-extras-3.6.jar",
-        "src/com/tracker/mvc/lib/jcalendar-1.4.jar",
-        "src/com/tracker/mvc/lib/json-20220924.jar",
-        "src/com/tracker/mvc/lib/jsvg-1.4.0.jar",
-        "src/com/tracker/mvc/lib/miglayout-core-5.3.jar",
-        "src/com/tracker/mvc/lib/miglayout-swing-5.3.jar",
-        "src/com/tracker/mvc/lib/modal-dialog-2.4.0.jar",
-        "src/com/tracker/mvc/lib/pdfbox-app-3.0.5.jar",
-        "src/com/tracker/mvc/lib/sqlite-jdbc-3.50.3.0.jar",
-        "src/com/tracker/mvc/lib/swing-datetime-picker-2.1.3.jar",
-        "src/com/tracker/mvc/lib/swing-glasspane-popup-1.5.1.jar"
-    ]
+  "java.project.referencedLibraries": [
+    "lib/**/*.jar",
+    "src/com/tracker/mvc/lib/flatlaf-3.6.jar",
+    "src/com/tracker/mvc/lib/flatlaf-extras-3.6.jar",
+    "src/com/tracker/mvc/lib/jcalendar-1.4.jar",
+    "src/com/tracker/mvc/lib/json-20220924.jar",
+    "src/com/tracker/mvc/lib/jsvg-1.4.0.jar",
+    "src/com/tracker/mvc/lib/miglayout-core-5.3.jar",
+    "src/com/tracker/mvc/lib/miglayout-swing-5.3.jar",
+    "src/com/tracker/mvc/lib/modal-dialog-2.4.0.jar",
+    "src/com/tracker/mvc/lib/pdfbox-app-3.0.5.jar",
+    "src/com/tracker/mvc/lib/sqlite-jdbc-3.50.3.0.jar",
+    "src/com/tracker/mvc/lib/swing-datetime-picker-2.1.3.jar",
+    "src/com/tracker/mvc/lib/swing-glasspane-popup-1.5.1.jar"
+  ],
+  "task.allowAutomaticTasks": true,
+  "debug.openDebug": "neverOpen",
+  "terminal.integrated.inheritEnv": false,
+  "tasks": {
+    "label": "lint on open",
+    "type": "shell",
+    "command": "npm run lint",
+    "runOn": "folderOpen"
+  }
 }

@@ -62,7 +62,7 @@ public class KanbanBoard extends javax.swing.JPanel {
         addTaskBtn.setBackground(new Color(0, 120, 215));
         addTaskBtn.setForeground(Color.WHITE);
         addTaskBtn.putClientProperty(FlatClientProperties.STYLE, "arc:10; borderWidth:0; focusWidth:0; innerFocusWidth:0");
-        addTaskBtn.addActionListener(e -> showAddTaskDialog());
+        addTaskBtn.addActionListener(e -> showAddTaskDialog("TODO"));
 
         headerPanel.add(titleLabel, BorderLayout.WEST);
         headerPanel.add(addTaskBtn, BorderLayout.EAST);
@@ -74,7 +74,7 @@ public class KanbanBoard extends javax.swing.JPanel {
         columnsPanel.setOpaque(false);
 
         // To-Do Column
-        JPanel todoColumn = createColumn("To-Do", new Color(255, 193, 7));
+        JPanel todoColumn = createColumn("To-Do", new Color(255, 193, 7), "TODO");
         todoPanel = new JPanel();
         setupDropTarget(todoPanel, "TODO");
         JScrollPane todoScroll = createScrollPane(todoPanel);
@@ -82,7 +82,7 @@ public class KanbanBoard extends javax.swing.JPanel {
         columnsPanel.add(todoColumn);
 
         // In Progress Column
-        JPanel inProgressColumn = createColumn("In Progress", new Color(33, 150, 243));
+        JPanel inProgressColumn = createColumn("In Progress", new Color(33, 150, 243), "IN_PROGRESS");
         inProgressPanel = new JPanel();
         setupDropTarget(inProgressPanel, "IN_PROGRESS");
         JScrollPane inProgressScroll = createScrollPane(inProgressPanel);
@@ -90,7 +90,7 @@ public class KanbanBoard extends javax.swing.JPanel {
         columnsPanel.add(inProgressColumn);
 
         // Done Column
-        JPanel doneColumn = createColumn("Done", new Color(76, 175, 80));
+        JPanel doneColumn = createColumn("Done", new Color(76, 175, 80), "DONE");
         donePanel = new JPanel();
         setupDropTarget(donePanel, "DONE");
         JScrollPane doneScroll = createScrollPane(donePanel);
@@ -100,18 +100,36 @@ public class KanbanBoard extends javax.swing.JPanel {
         add(columnsPanel, BorderLayout.CENTER);
     }
 
-    private JPanel createColumn(String title, Color headerColor) {
+    private JPanel createColumn(String title, Color headerColor, String status) {
         JPanel column = new JPanel(new BorderLayout(0, 10));
         // Rounded white column background
         column.putClientProperty(FlatClientProperties.STYLE, "arc:20; background:#ffffff; border:1,1,1,1,#e5e5e5");
-        column.setBorder(new EmptyBorder(15, 15, 15, 15));
+        column.setBorder(new EmptyBorder(10, 15, 15, 15));
 
-        // Header label with color indicator
-        JLabel headerLabel = new JLabel(title, SwingConstants.CENTER);
+        // Header Panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
+        headerPanel.setBorder(new EmptyBorder(5, 0, 5, 0));
+
+        // Header label
+        JLabel headerLabel = new JLabel(title);
         headerLabel.setFont(new Font("Poppins", Font.BOLD, 16));
         headerLabel.setForeground(Color.DARK_GRAY);
         
-        column.add(headerLabel, BorderLayout.NORTH);
+        // Add Button for this column
+        JButton addBtn = new JButton("+");
+        addBtn.setFont(new Font("Poppins", Font.BOLD, 14));
+        addBtn.setForeground(headerColor);
+        addBtn.setContentAreaFilled(false);
+        addBtn.setBorder(null);
+        addBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        addBtn.setToolTipText("Add task to " + title);
+        addBtn.addActionListener(e -> showAddTaskDialog(status));
+
+        headerPanel.add(headerLabel, BorderLayout.CENTER);
+        headerPanel.add(addBtn, BorderLayout.EAST);
+        
+        column.add(headerPanel, BorderLayout.NORTH);
         return column;
     }
 
@@ -341,7 +359,7 @@ public class KanbanBoard extends javax.swing.JPanel {
         return label;
     }
 
-    private void showAddTaskDialog() {
+    private void showAddTaskDialog(String defaultStatus) {
         Create createPanel = new Create();
 
         DefaultOption option = new DefaultOption() {
@@ -354,7 +372,7 @@ public class KanbanBoard extends javax.swing.JPanel {
         String[] actions = { "Cancel", "Save" };
 
         GlassPanePopup.showPopup(
-                new SimplePopupBorder(createPanel, "Create Task", actions, (popup, i) -> {
+                new SimplePopupBorder(createPanel, "Create Task (" + defaultStatus.replace("_", " ") + ")", actions, (popup, i) -> {
                     if (i == 1) { // Save
                         try {
                             String subject = createPanel.getSubject();
@@ -374,8 +392,8 @@ public class KanbanBoard extends javax.swing.JPanel {
                             task.setSubject(subject);
                             task.setDescription(description);
                             task.setDeadline(deadline);
-                            task.setCompleted(false);
-                            task.setStatus("TODO");
+                            task.setCompleted("DONE".equals(defaultStatus));
+                            task.setStatus(defaultStatus);
 
                             if (taskController == null) {
                                 taskController = new TaskController();
