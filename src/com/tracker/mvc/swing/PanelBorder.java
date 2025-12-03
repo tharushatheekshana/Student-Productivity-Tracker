@@ -36,8 +36,8 @@ public class PanelBorder extends javax.swing.JPanel {
 
         // EXACT SAME GRADIENT AS Menu.java
         GradientPaint gp = new GradientPaint(
-                0, 0, Color.decode("#000000"), // top
-                0, getHeight(), Color.decode("#434343") // bottom
+                0, 0, Color.decode("#141E30"), // top
+                0, getHeight(), Color.decode("#243B55") // bottom
         );
 
         g2.setPaint(gp);

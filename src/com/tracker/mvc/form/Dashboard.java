@@ -260,13 +260,13 @@ public class Dashboard extends JPanel {
             
             // Dark gradient background for the scroll pane area
             scroll.setStyle(
-                    "-fx-background: linear-gradient(to bottom, #000000, #434343); " +
-                    "-fx-background-color: linear-gradient(to bottom, #000000, #434343); " +
+                    "-fx-background: linear-gradient(to bottom, #141E30, #243B55); " +
+                    "-fx-background-color: linear-gradient(to bottom, #141E30, #243B55); " +
                     "-fx-padding: 0;");
 
             BorderPane root = new BorderPane(scroll);
             root.setPadding(new Insets(0));
-            root.setStyle("-fx-background-color: linear-gradient(to bottom, #000000, #434343);"); 
+            root.setStyle("-fx-background-color: linear-gradient(to bottom, #141E30, #243B55);"); 
 
             Scene scene = new Scene(root);
             scene.setFill(null); // Important for JFXPanel transparency

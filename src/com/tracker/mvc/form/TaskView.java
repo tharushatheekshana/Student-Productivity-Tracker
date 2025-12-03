@@ -732,8 +732,8 @@ class GradientPanel extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
         GradientPaint gp = new GradientPaint(
-                0, 0, Color.decode("#000000"),     // top color
-                0, h, Color.decode("#434343")      // bottom color
+                0, 0, Color.decode("#141E30"),     // top color
+                0, h, Color.decode("#243B55")      // bottom color
         );
 
         g2.setPaint(gp);
